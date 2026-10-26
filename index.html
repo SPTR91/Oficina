@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Oficina Virtual</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f7f6; }
+        .btn-main { padding: 12px 20px; background-color: #1a73e8; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-main:hover { opacity: 0.9; }
+        .admin-panel { margin-top: 20px; padding: 20px; background: #e9eef6; border-radius: 8px; max-width: 600px; border: 1px solid #cdd6e5; }
+        #pip-content { display: none; }
+    </style>
+</head>
+<body>
+
+    <h2>Oficina Virtual Ágil</h2>
+    <p>Ingresa tu nombre para entrar a la sesión compartida:</p>
+    <input type="text" id="nombre-usuario" placeholder="Ej. Manuel" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px;">
+    <br>
+    <button id="btn-pip" class="btn-main">🚀 Conectar y Abrir Ventana Flotante</button>
+
+    <div class="admin-panel">
+        <h3 style="margin-top: 0; color: #1a73e8;">⚙️ Panel de Administración</h3>
+        <p style="font-size: 14px; color: #555;">Gestiona la base de datos de tu equipo en la nube.</p>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button id="btn-exportar" class="btn-main" style="background-color: #0f9d58; font-size: 14px;">📊 Exportar Tareas (CSV)</button>
+            <button id="btn-borrar" class="btn-main" style="background-color: #d93025; font-size: 14px;">🗑️ Limpiar Historial (Admin)</button>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 15px;">
+        
+        <p style="font-size: 14px; font-weight: bold; color: #333; margin-bottom: 5px;">Importar tareas antiguas:</p>
+        <input type="file" id="file-csv" accept=".csv" style="margin-bottom: 10px; font-size: 14px;">
+        <br>
+        <button id="btn-importar" class="btn-main" style="background-color: #555; font-size: 13px; padding: 8px 15px;">📥 Cargar a la nube</button>
+    </div>
+
+    <!-- VENTANA FLOTANTE -->
+    <div id="pip-content">
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 12px; display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; background: #fff;}
+            h3 { margin: 0 0 10px 0; font-size: 16px; flex-shrink: 0; color: #1a73e8;}
+            
+            .tabs { display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; flex-shrink: 0;}
+            .tab-btn { background: none; border: none; cursor: pointer; color: #666; font-weight: bold; font-size: 11px; padding: 5px; }
+            .tab-btn.active { color: #1a73e8; border-bottom: 2px solid #1a73e8; }
+            
+            .contenido-tab { flex-grow: 1; overflow-y: auto; display: none; padding-right: 5px;}
+            .contenido-tab.active { display: block; }
+            
+            input[type="text"], input[type="time"], select { padding: 6px; border-radius: 4px; border: 1px solid #ccc; font-size: 13px; }
+            .btn-accion { background: #1a73e8; color: white; border: none; cursor: pointer; border-radius: 4px; padding: 6px 12px; font-weight: bold; }
+            
+            .input-group { display: flex; gap: 4px; margin-bottom: 10px; align-items: center; }
+            .task-input { flex-grow: 1; }
+            .time-input { width: 75px; }
+            .prio-input { width: 45px; text-align: center; }
+            
+            .task-item { display: flex; align-items: stretch; padding: 8px 5px; border-bottom: 1px solid #f0f0f0; }
+            .prio-bar { width: 6px; cursor: pointer; margin-right: 8px; border-radius: 4px; flex-shrink: 0; transition: transform 0.1s; }
+            .prio-bar:hover { filter: brightness(0.8); transform: scaleX(1.5); }
+            .prio-1 { background-color: #d93025; } 
+            .prio-2 { background-color: #fbbc04; } 
+            .prio-3 { background-color: #34a853; } 
+            
+            .task-item input[type="checkbox"] { align-self: flex-start; margin-top: 3px; margin-right: 8px; cursor: pointer; }
+            .task-content { display: flex; flex-direction: column; flex-grow: 1; word-break: break-word; }
+            .task-text { font-size: 14px; margin-bottom: 2px; }
+            .task-time { font-size: 11px; color: #888; }
+            
+            .msg-confirm { color: #0f9d58; font-weight: bold; font-size: 12px; display: none; margin-bottom: 2px; }
+            
+            .mensaje { margin-bottom: 8px; padding: 8px; background: #f8f9fa; border-radius: 8px; font-size: 13px; border-left: 3px solid #1a73e8; }
+            .msg-usuario { font-weight: bold; color: #1a73e8; margin-bottom: 2px; }
+            .btn-delete-note { background: none; border: 1px solid #ccc; color: #d93025; cursor: pointer; font-size: 11px; padding: 4px 6px; border-radius: 4px; transition: 0.2s; }
+            .btn-delete-note:hover { background: #ffe6e6; }
+        </style>
+        
+        <h3 id="saludo-usuario">Oficina</h3>
+        
+        <div class="tabs">
+            <button class="tab-btn active" id="btn-tab-tareas">TAREAS</button>
+            <button class="tab-btn" id="btn-tab-notas">NOTAS</button>
+            <button class="tab-btn" id="btn-tab-chat">CHAT</button>
+            <button class="tab-btn" id="btn-tab-historial">HISTORIAL</button>
+        </div>
+
+        <div id="tab-tareas" class="contenido-tab active">
+            <div class="input-group">
+                <input type="text" id="nueva-tarea" class="task-input" placeholder="¿Qué hacer?">
+                <input type="time" id="hora-tarea" class="time-input">
+                <select id="prioridad-tarea" class="prio-input" title="Prioridad"><option value="3" selected>🟢</option><option value="2">🟡</option><option value="1">🔴</option></select>
+                <button class="btn-accion" id="btn-add-tarea">+</button>
+            </div>
+            <div id="lista-tareas" style="font-size: 13px; color: #666;">Cargando tareas...</div>
+        </div>
+
+        <div id="tab-notas" class="contenido-tab">
+            <div class="input-group">
+                <input type="text" id="nueva-nota" class="task-input" placeholder="Guardar enlace o nota...">
+                <button class="btn-accion" id="btn-add-nota">+</button>
+            </div>
+            <div id="lista-notas" style="font-size: 13px; color: #666;">Cargando notas...</div>
+        </div>
+
+        <div id="tab-chat" class="contenido-tab">
+            <div id="lista-mensajes" style="height: 320px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; color: #666;">Cargando chat...</div>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="nuevo-mensaje" placeholder="Mensaje..." style="flex-grow: 1;">
+                <button class="btn-accion" id="btn-enviar-msg">Enviar</button>
+            </div>
+        </div>
+
+        <div id="tab-historial" class="contenido-tab">
+            <div id="lista-historial" style="font-size: 13px; color: #666;">Cargando historial...</div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. CONEXIÓN A SUPABASE
+        // ==========================================
+        const supabaseUrl = 'https://msplydphthiditnoylcq.supabase.co'; 
+        const supabaseKey = 'sb_publishable_YbzzNtr9z_QlM6fJJIy3ig_UlzpRO0J';
+        const db = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        let nombreActual = "";
+
+        // ==========================================
+        // 2. FUNCIONES DEL PANEL ADMIN
+        // ==========================================
+        document.getElementById('btn-exportar').addEventListener('click', async () => {
+            let { data, error } = await db.from('tareas').select('*').order('created_at', { ascending: true });
+            if(error) return alert("Error: " + error.message);
+            if(!data || data.length === 0) return alert("No hay tareas para exportar.");
+            
+            let csv = "\uFEFFEstado,Prioridad,Tarea,Hora Limite,Fecha Creacion,Fecha Finalizada\n";
+            data.forEach(t => {
+                let est = t.completada ? "Completada" : "Pendiente";
+                let pri = t.prioridad === 1 ? "Alta (Rojo)" : (t.prioridad === 2 ? "Media (Amarillo)" : "Baja (Verde)");
+                let fc = new Date(t.created_at).toLocaleString();
+                let ff = t.fecha_completada ? new Date(t.fecha_completada).toLocaleString() : "N/A";
+                csv += `"${est}","${pri}","${t.texto.replace(/"/g,'""')}","${t.hora_vencimiento||'Sin hora'}","${fc}","${ff}"\n`;
+            });
+            let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            let link = document.createElement("a"); link.href = URL.createObjectURL(blob);
+            link.download = "Reporte_Oficina.csv"; link.click();
+        });
+
+        document.getElementById('btn-borrar').addEventListener('click', async () => {
+            const pass = prompt("⚠️ Ingresa la contraseña de administrador:");
+            if (pass === "admin123") {
+                if (confirm("¿Estás seguro? Se borrarán permanentemente las tareas completadas de la nube.")) {
+                    let { error } = await db.from('tareas').delete().eq('completada', true);
+                    if(error) alert("Error: " + error.message);
+                    else alert("✅ Historial limpiado exitosamente.");
+                }
+            } else if (pass !== null) alert("❌ Contraseña incorrecta.");
+        });
+
+        document.getElementById('btn-importar').addEventListener('click', () => {
+            const fileInput = document.getElementById('file-csv');
+            if (!fileInput.files.length) return alert("Selecciona un archivo .csv");
+            
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                let text = e.target.result.replace(/^\uFEFF/, ''); 
+                let lines = text.split('\n');
+                let tareasAInsertar = [];
+                
+                const parseDate = (dStr) => {
+                    if(!dStr || dStr.includes('N/A') || dStr.trim() === '') return null;
+                    try { let p = dStr.replace(/"/g, '').split(', '); let f = p[0].split('/'); return `${f[2]}-${f[1]}-${f[0]}T${p[1]}-05:00`; } catch(ex) { return null; }
+                };
+
+                for(let i = 1; i < lines.length; i++) {
+                    if(!lines[i].trim()) continue;
+                    const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim());
+                    if (row.length < 5) continue;
+                    tareasAInsertar.push({
+                        completada: row[0] === "Completada",
+                        prioridad: row[1].includes("Alta") ? 1 : (row[1].includes("Media") ? 2 : 3),
+                        texto: row[2],
+                        hora_vencimiento: row[3] === 'Sin hora' ? null : row[3],
+                        created_at: parseDate(row[4]) || new Date().toISOString(),
+                        fecha_completada: parseDate(row[5])
+                    });
+                }
+                
+                if (tareasAInsertar.length === 0) return alert("Archivo vacío o formato inválido.");
+                alert(`⏳ Subiendo ${tareasAInsertar.length} tareas a la nube...`);
+                let { error } = await db.from('tareas').insert(tareasAInsertar);
+                if(error) alert("❌ Error: " + error.message); else alert("✅ ¡Importación exitosa!");
+            };
+            reader.readAsText(fileInput.files[0], 'UTF-8');
+        });
+
+        // ==========================================
+        // 3. LÓGICA DE LA VENTANA FLOTANTE
+        // ==========================================
+        const btnPip = document.getElementById('btn-pip');
+        const pipContent = document.getElementById('pip-content');
+
+        btnPip.addEventListener('click', async () => {
+            const inputNombre = document.getElementById('nombre-usuario').value.trim();
+            if (!inputNombre) return alert("Ingresa tu nombre.");
+            nombreActual = inputNombre;
+
+            if (!('documentPictureInPicture' in window)) return alert("Tu navegador no soporta PiP.");
+
+            const pipWindow = await documentPictureInPicture.requestWindow({ width: 380, height: 500 });
+            pipWindow.document.body.innerHTML = pipContent.innerHTML;
+            const doc = pipWindow.document;
+            doc.getElementById('saludo-usuario').innerText = `Oficina de ${nombreActual}`;
+            
+            const pestanas = ['tareas', 'notas', 'chat', 'historial'];
+            pestanas.forEach(p => {
+                doc.getElementById(`btn-tab-${p}`).addEventListener('click', () => {
+                    pestanas.forEach(px => { doc.getElementById(`btn-tab-${px}`).classList.remove('active'); doc.getElementById(`tab-${px}`).classList.remove('active'); });
+                    doc.getElementById(`btn-tab-${p}`).classList.add('active'); doc.getElementById(`tab-${p}`).classList.add('active');
+                    if (p === 'chat') { doc.getElementById('lista-mensajes').scrollTop = doc.getElementById('lista-mensajes').scrollHeight; }
+                });
+            });
+
+            const linkify = (text) => text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank" style="color:#1a73e8; text-decoration:none;">${url}</a>`);
+
+            // --- TAREAS ---
+            async function cargarTareas() {
+                let { data: tareas, error } = await db.from('tareas').select('*').eq('completada', false).order('prioridad', { ascending: true }).order('created_at', { ascending: true });
+                const lista = doc.getElementById('lista-tareas');
+                if (error) return lista.innerHTML = `<span style="color:red">Error: ${error.message}</span>`;
+                if (tareas.length === 0) return lista.innerHTML = '<div style="text-align:center; margin-top:20px;">No hay tareas pendientes.</div>';
+
+                lista.innerHTML = '';
+                tareas.forEach(t => {
+                    const div = document.createElement('div');
+                    div.className = 'task-item';
+                    div.innerHTML = `
+                        <div class="prio-bar prio-${t.prioridad}" id="prio-${t.id}" title="Clic para cambiar prioridad"></div>
+                        <input type="checkbox" id="chk-${t.id}">
+                        <div class="task-content">
+                            <span class="task-text">${linkify(t.texto)}</span>
+                            <span class="msg-confirm" id="conf-${t.id}">¿Confirmar? Clic de nuevo</span>
+                            <span class="task-time">${t.hora_vencimiento ? '⏰ '+t.hora_vencimiento : 'Sin hora'}</span>
+                        </div>`;
+                    lista.appendChild(div);
+                    
+                    doc.getElementById(`prio-${t.id}`).addEventListener('click', async () => {
+                        let { error } = await db.from('tareas').update({ prioridad: t.prioridad === 3 ? 2 : (t.prioridad === 2 ? 1 : 3) }).eq('id', t.id);
+                        if(error) alert(error.message); else cargarTareas(); 
+                    });
+                    
+                    const chk = doc.getElementById(`chk-${t.id}`);
+                    const confMsg = doc.getElementById(`conf-${t.id}`);
+                    
+                    chk.addEventListener('click', async (e) => {
+                        if (!chk.dataset.confirming) {
+                            e.preventDefault(); 
+                            chk.dataset.confirming = 'true';
+                            confMsg.style.display = 'block'; 
+                            setTimeout(() => {
+                                if (doc.getElementById(`chk-${t.id}`) && chk.dataset.confirming) {
+                                    chk.dataset.confirming = ''; chk.checked = false; confMsg.style.display = 'none'; 
+                                }
+                            }, 3000);
+                        } else {
+                            e.preventDefault();
+                            let { error } = await db.from('tareas').update({ completada: true, fecha_completada: new Date().toISOString() }).eq('id', t.id);
+                            if(error) alert(error.message); else { cargarTareas(); cargarHistorial(); }
+                        }
+                    });
+                });
+            }
+
+            doc.getElementById('btn-add-tarea').addEventListener('click', async () => {
+                const txt = doc.getElementById('nueva-tarea').value.trim();
+                if (!txt) return;
+                let { error } = await db.from('tareas').insert([{ texto: txt, hora_vencimiento: doc.getElementById('hora-tarea').value || null, prioridad: parseInt(doc.getElementById('prioridad-tarea').value)||3 }]);
+                if (error) { alert("Error: " + error.message); return; }
+                doc.getElementById('nueva-tarea').value = ''; doc.getElementById('hora-tarea').value = '';
+                cargarTareas(); 
+            });
+
+            // --- NOTAS (Con borrado ágil sin pop-up) ---
+            async function cargarNotas() {
+                let { data: notas, error } = await db.from('notas').select('*').order('created_at', { ascending: false });
+                const lista = doc.getElementById('lista-notas');
+                if (error) return lista.innerHTML = `<span style="color:red">Error: ${error.message}</span>`;
+                if (notas.length === 0) return lista.innerHTML = '<div style="text-align:center; margin-top:20px;">No hay notas.</div>';
+
+                lista.innerHTML = '';
+                notas.forEach(n => {
+                    const div = document.createElement('div');
+                    div.className = 'task-item';
+                    div.innerHTML = `
+                        <div class="task-content">
+                            <span class="task-text">📌 ${linkify(n.texto)}</span>
+                        </div>
+                        <button class="btn-delete-note" id="del-nota-${n.id}" title="Doble clic para borrar">✖</button>
+                    `;
+                    lista.appendChild(div);
+                    
+                    // Lógica de Doble Clic para borrar nota
+                    const btnDel = doc.getElementById(`del-nota-${n.id}`);
+                    btnDel.addEventListener('click', async () => {
+                        if (!btnDel.dataset.confirming) {
+                            btnDel.dataset.confirming = 'true';
+                            btnDel.innerHTML = '¿Seguro?';
+                            btnDel.style.fontWeight = 'bold';
+                            setTimeout(() => {
+                                if (doc.getElementById(`del-nota-${n.id}`) && btnDel.dataset.confirming) {
+                                    btnDel.dataset.confirming = '';
+                                    btnDel.innerHTML = '✖';
+                                    btnDel.style.fontWeight = 'normal';
+                                }
+                            }, 3000);
+                        } else {
+                            let { error } = await db.from('notas').delete().eq('id', n.id); 
+                            if(error) alert(error.message); else cargarNotas();
+                        }
+                    });
+                });
+            }
+
+            doc.getElementById('btn-add-nota').addEventListener('click', async () => {
+                const txt = doc.getElementById('nueva-nota').value.trim();
+                if (!txt) return;
+                let { error } = await db.from('notas').insert([{ texto: txt }]);
+                if (error) { alert("Error: " + error.message); return; }
+                doc.getElementById('nueva-nota').value = '';
+                cargarNotas(); 
+            });
+
+            // --- HISTORIAL ---
+            async function cargarHistorial() {
+                let { data: tareas, error } = await db.from('tareas').select('*').eq('completada', true).order('fecha_completada', { ascending: false }).limit(50);
+                const lista = doc.getElementById('lista-historial');
+                if (error) return lista.innerHTML = `<span style="color:red">Error: ${error.message}</span>`;
+                
+                lista.innerHTML = '';
+                tareas.forEach(t => {
+                    const fecha = t.fecha_completada ? new Date(t.fecha_completada).toLocaleString() : 'N/A';
+                    lista.innerHTML += `<div class="task-item"><div class="prio-bar prio-${t.prioridad}" style="cursor:default"></div>
+                    <div class="task-content"><span class="task-text" style="text-decoration:line-through;color:#999">✅ ${linkify(t.texto)}</span><span class="task-time">${fecha}</span></div></div>`;
+                });
+            }
+
+            // --- CHAT ---
+            async function cargarMensajes() {
+                let { data: mensajes, error } = await db.from('mensajes').select('*').order('created_at', { ascending: false }).limit(50);
+                const lista = doc.getElementById('lista-mensajes');
+                if (error) return lista.innerHTML = `<span style="color:red">Error: ${error.message}</span>`;
+                
+                mensajes.reverse();
+                lista.innerHTML = '';
+                mensajes.forEach(m => {
+                    lista.innerHTML += `<div class="mensaje"><div class="msg-usuario">${m.usuario}</div><div>${linkify(m.texto)}</div></div>`;
+                });
+                lista.scrollTop = lista.scrollHeight;
+            }
+
+            doc.getElementById('btn-enviar-msg').addEventListener('click', async () => {
+                const txt = doc.getElementById('nuevo-mensaje').value.trim();
+                if (!txt) return;
+                let { error } = await db.from('mensajes').insert([{ usuario: nombreActual, texto: txt }]);
+                if (error) { alert("Error al enviar: " + error.message); return; }
+                doc.getElementById('nuevo-mensaje').value = '';
+                cargarMensajes(); 
+            });
+
+            // Eventos de teclado (Enter)
+            doc.getElementById('nueva-tarea').addEventListener('keypress', (e) => { if (e.key === 'Enter') doc.getElementById('btn-add-tarea').click(); });
+            doc.getElementById('nueva-nota').addEventListener('keypress', (e) => { if (e.key === 'Enter') doc.getElementById('btn-add-nota').click(); });
+            doc.getElementById('nuevo-mensaje').addEventListener('keypress', (e) => { if (e.key === 'Enter') doc.getElementById('btn-enviar-msg').click(); });
+
+            db.channel('public:tareas').on('postgres_changes', { event: '*', schema: 'public', table: 'tareas' }, payload => { cargarTareas(); cargarHistorial(); }).subscribe();
+            db.channel('public:notas').on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, payload => { cargarNotas(); }).subscribe();
+            db.channel('public:mensajes').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, payload => { cargarMensajes(); }).subscribe();
+
+            cargarTareas(); cargarNotas(); cargarMensajes(); cargarHistorial();
+        });
+    </script>
+</body>
+</html>
