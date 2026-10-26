@@ -72,7 +72,13 @@
             
             .msg-confirm { color: #0f9d58; font-weight: bold; font-size: 12px; display: none; margin-bottom: 2px; }
             
-            .btn-transfer { background: none; border: 1px solid #1a73e8; color: #1a73e8; cursor: pointer; font-size: 12px; padding: 4px 6px; border-radius: 4px; margin-left: 5px; height: fit-content; align-self: center; transition: 0.2s;}
+            /* CAJA DE TRANSFERENCIA INTERNA (Sin pop-ups bloqueados) */
+            .transfer-box { display: none; gap: 4px; margin-top: 6px; align-items: center; background: #f0f4f9; padding: 4px; border-radius: 4px; }
+            .transfer-input { flex-grow: 1; padding: 4px 6px !important; font-size: 12px !important; border: 1px solid #1a73e8 !important; }
+            .btn-ok-trans { background: #1a73e8; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; font-weight: bold; }
+            .btn-cancel-trans { background: none; border: none; color: #666; cursor: pointer; font-size: 12px; padding: 2px 4px; }
+
+            .btn-transfer { background: none; border: 1px solid #1a73e8; color: #1a73e8; cursor: pointer; font-size: 12px; padding: 4px 6px; border-radius: 4px; margin-left: 5px; height: fit-content; align-self: flex-start; margin-top: 2px; transition: 0.2s;}
             .btn-transfer:hover { background: #e8f0fe; }
             
             .mensaje { margin-bottom: 8px; padding: 8px; background: #f8f9fa; border-radius: 8px; font-size: 13px; border-left: 3px solid #1a73e8; }
@@ -123,7 +129,7 @@
 
     <script>
         // ==========================================
-        // 1. CONEXIÓN A SUPABASE (YA CON TUS LLAVES)
+        // 1. CONEXIÓN A SUPABASE (TUS LLAVES INCLUIDAS)
         // ==========================================
         const supabaseUrl = 'https://msplydphthiditnoylcq.supabase.co'; 
         const supabaseKey = 'sb_publishable_YbzzNtr9z_QlM6fJJIy3ig_UlzpRO0J';
@@ -134,7 +140,6 @@
         // ==========================================
         // 2. FUNCIONES DEL PANEL ADMIN (PERSONALIZADO)
         // ==========================================
-        
         function getUsuarioAdmin() {
             const usr = document.getElementById('nombre-usuario').value.trim();
             if(!usr) { alert("⚠️ Escribe tu nombre en la casilla superior primero."); return null; }
@@ -144,7 +149,7 @@
         document.getElementById('btn-exportar').addEventListener('click', async () => {
             const usr = getUsuarioAdmin(); if(!usr) return;
             
-            let { data, error } = await db.from('tareas').select('*').eq('asignado_a', usr).order('created_at', { ascending: true });
+            let { data, error } = await db.from('tareas').select('*').ilike('asignado_a', usr).order('created_at', { ascending: true });
             if(error) return alert("Error: " + error.message);
             if(!data || data.length === 0) return alert("No tienes tareas para exportar.");
             
@@ -166,8 +171,8 @@
             
             const pass = prompt("⚠️ Ingresa la contraseña de administrador:");
             if (pass === "admin123") {
-                if (confirm(`¿Seguro? Se borrarán permanentemente TUS tareas completadas.`)) {
-                    let { error } = await db.from('tareas').delete().eq('completada', true).eq('asignado_a', usr);
+                if (confirm(`¿Seguro? Se borrarán permanentemente las tareas completadas de ${usr}.`)) {
+                    let { error } = await db.from('tareas').delete().eq('completada', true).ilike('asignado_a', usr);
                     if(error) alert("Error: " + error.message);
                     else alert("✅ Tu historial ha sido limpiado exitosamente.");
                 }
@@ -196,7 +201,7 @@
                     const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim());
                     if (row.length < 5) continue;
                     tareasAInsertar.push({
-                        asignado_a: usr, // Ahora se asignan a ti automáticamente
+                        asignado_a: usr,
                         completada: row[0] === "Completada",
                         prioridad: row[1].includes("Alta") ? 1 : (row[1].includes("Media") ? 2 : 3),
                         texto: row[2],
@@ -207,7 +212,7 @@
                 }
                 
                 if (tareasAInsertar.length === 0) return alert("Archivo vacío o formato inválido.");
-                alert(`⏳ Subiendo ${tareasAInsertar.length} tareas a tu cuenta...`);
+                alert(`⏳ Subiendo ${tareasAInsertar.length} tareas a la cuenta de ${usr}...`);
                 let { error } = await db.from('tareas').insert(tareasAInsertar);
                 if(error) alert("❌ Error: " + error.message); else alert("✅ ¡Importación exitosa!");
             };
@@ -243,20 +248,19 @@
 
             const linkify = (text) => text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank" style="color:#1a73e8; text-decoration:none;">${url}</a>`);
 
-            // --- TAREAS (Filtradas por Usuario + Función de Transferir) ---
+            // --- TAREAS (Filtradas por Usuario + Caja de Transferencia sin Pop-up) ---
             async function cargarTareas() {
-                // Solo traemos las tuyas
-                let { data: tareas, error } = await db.from('tareas').select('*').eq('completada', false).eq('asignado_a', nombreActual).order('prioridad', { ascending: true }).order('created_at', { ascending: true });
+                // ilike ignora mayúsculas/minúsculas (Manuel = manuel)
+                let { data: tareas, error } = await db.from('tareas').select('*').eq('completada', false).ilike('asignado_a', nombreActual).order('prioridad', { ascending: true }).order('created_at', { ascending: true });
                 const lista = doc.getElementById('lista-tareas');
                 if (error) return lista.innerHTML = `<span style="color:red">Error: ${error.message}</span>`;
-                if (tareas.length === 0) return lista.innerHTML = '<div style="text-align:center; margin-top:20px;">No tienes tareas pendientes. ¡Buen trabajo!</div>';
+                if (tareas.length === 0) return lista.innerHTML = `<div style="text-align:center; margin-top:20px;">No hay tareas pendientes para <b>${nombreActual}</b>.</div>`;
 
                 lista.innerHTML = '';
                 tareas.forEach(t => {
                     const div = document.createElement('div');
                     div.className = 'task-item';
                     
-                    // Se agregó el botón 📤 para transferir
                     div.innerHTML = `
                         <div class="prio-bar prio-${t.prioridad}" id="prio-${t.id}" title="Cambiar prioridad"></div>
                         <input type="checkbox" id="chk-${t.id}">
@@ -264,28 +268,49 @@
                             <span class="task-text">${linkify(t.texto)}</span>
                             <span class="msg-confirm" id="conf-${t.id}">¿Confirmar? Clic de nuevo</span>
                             <span class="task-time">${t.hora_vencimiento ? '⏰ '+t.hora_vencimiento : 'Sin hora'}</span>
+                            
+                            <!-- Cajita desplegable para transferir sin usar prompt() -->
+                            <div class="transfer-box" id="tbox-${t.id}">
+                                <input type="text" class="transfer-input" id="tinput-${t.id}" placeholder="¿A quién? (Ej. Yosimar)">
+                                <button class="btn-ok-trans" id="tok-${t.id}">Enviar</button>
+                                <button class="btn-cancel-trans" id="tcancel-${t.id}" title="Cancelar">✖</button>
+                            </div>
                         </div>
-                        <button class="btn-transfer" id="trans-${t.id}" title="Transferir (Delegar) a alguien más">➡️</button>
+                        <button class="btn-transfer" id="trans-${t.id}" title="Transferir tarea a otra persona">➡️</button>
                     `;
                     lista.appendChild(div);
                     
-                    // Transferir tarea
-                    doc.getElementById(`trans-${t.id}`).addEventListener('click', async () => {
-                        let receptor = prompt("¿A qué miembro del equipo deseas enviarle esta tarea? (Ej. Yosimar)");
-                        if (receptor && receptor.trim() !== "") {
-                            let { error } = await db.from('tareas').update({ asignado_a: receptor.trim() }).eq('id', t.id);
-                            if(error) alert(error.message); 
-                            else { 
-                                alert(`✅ Tarea enviada al tablero de ${receptor.trim()}`); 
-                                cargarTareas(); // Desaparecerá de tu vista automáticamente
-                            }
-                        }
+                    // Mostrar/Ocultar caja de transferencia
+                    const tBox = doc.getElementById(`tbox-${t.id}`);
+                    const tInput = doc.getElementById(`tinput-${t.id}`);
+                    
+                    doc.getElementById(`trans-${t.id}`).addEventListener('click', () => {
+                        tBox.style.display = tBox.style.display === 'flex' ? 'none' : 'flex';
+                        if (tBox.style.display === 'flex') tInput.focus();
                     });
+
+                    doc.getElementById(`tcancel-${t.id}`).addEventListener('click', () => {
+                        tBox.style.display = 'none';
+                        tInput.value = '';
+                    });
+
+                    // Ejecutar transferencia
+                    const ejecutarTransferencia = async () => {
+                        const destino = tInput.value.trim();
+                        if (!destino) return;
+                        const btnOk = doc.getElementById(`tok-${t.id}`);
+                        btnOk.innerText = "...";
+                        let { error } = await db.from('tareas').update({ asignado_a: destino }).eq('id', t.id);
+                        if (!error) cargarTareas();
+                    };
+
+                    doc.getElementById(`tok-${t.id}`).addEventListener('click', ejecutarTransferencia);
+                    tInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') ejecutarTransferencia(); });
                     
                     // Prioridad
                     doc.getElementById(`prio-${t.id}`).addEventListener('click', async () => {
                         let { error } = await db.from('tareas').update({ prioridad: t.prioridad === 3 ? 2 : (t.prioridad === 2 ? 1 : 3) }).eq('id', t.id);
-                        if(error) alert(error.message); else cargarTareas(); 
+                        if(!error) cargarTareas(); 
                     });
                     
                     // Completar
@@ -304,7 +329,7 @@
                         } else {
                             e.preventDefault();
                             let { error } = await db.from('tareas').update({ completada: true, fecha_completada: new Date().toISOString() }).eq('id', t.id);
-                            if(error) alert(error.message); else { cargarTareas(); cargarHistorial(); }
+                            if(!error) { cargarTareas(); cargarHistorial(); }
                         }
                     });
                 });
@@ -313,14 +338,14 @@
             doc.getElementById('btn-add-tarea').addEventListener('click', async () => {
                 const txt = doc.getElementById('nueva-tarea').value.trim();
                 if (!txt) return;
-                // La tarea nueva se te asigna a ti por defecto
                 let { error } = await db.from('tareas').insert([{ asignado_a: nombreActual, texto: txt, hora_vencimiento: doc.getElementById('hora-tarea').value || null, prioridad: parseInt(doc.getElementById('prioridad-tarea').value)||3 }]);
-                if (error) { alert("Error: " + error.message); return; }
-                doc.getElementById('nueva-tarea').value = ''; doc.getElementById('hora-tarea').value = '';
-                cargarTareas(); 
+                if (!error) {
+                    doc.getElementById('nueva-tarea').value = ''; doc.getElementById('hora-tarea').value = '';
+                    cargarTareas(); 
+                }
             });
 
-            // --- NOTAS (Globales para el equipo) ---
+            // --- NOTAS ---
             async function cargarNotas() {
                 let { data: notas, error } = await db.from('notas').select('*').order('created_at', { ascending: false });
                 const lista = doc.getElementById('lista-notas');
@@ -344,7 +369,7 @@
                             }, 3000);
                         } else {
                             let { error } = await db.from('notas').delete().eq('id', n.id); 
-                            if(error) alert(error.message); else cargarNotas();
+                            if(!error) cargarNotas();
                         }
                     });
                 });
@@ -354,14 +379,15 @@
                 const txt = doc.getElementById('nueva-nota').value.trim();
                 if (!txt) return;
                 let { error } = await db.from('notas').insert([{ texto: txt }]);
-                if (error) return;
-                doc.getElementById('nueva-nota').value = '';
-                cargarNotas(); 
+                if (!error) {
+                    doc.getElementById('nueva-nota').value = '';
+                    cargarNotas(); 
+                }
             });
 
-            // --- HISTORIAL (Solo ves el tuyo) ---
+            // --- HISTORIAL (Filtrado por usuario) ---
             async function cargarHistorial() {
-                let { data: tareas, error } = await db.from('tareas').select('*').eq('completada', true).eq('asignado_a', nombreActual).order('fecha_completada', { ascending: false }).limit(50);
+                let { data: tareas, error } = await db.from('tareas').select('*').eq('completada', true).ilike('asignado_a', nombreActual).order('fecha_completada', { ascending: false }).limit(50);
                 const lista = doc.getElementById('lista-historial');
                 if (error) return lista.innerHTML = `<span style="color:red">Error: ${error.message}</span>`;
                 
@@ -373,7 +399,7 @@
                 });
             }
 
-            // --- CHAT (Global para todos) ---
+            // --- CHAT ---
             async function cargarMensajes() {
                 let { data: mensajes, error } = await db.from('mensajes').select('*').order('created_at', { ascending: false }).limit(50);
                 const lista = doc.getElementById('lista-mensajes');
@@ -391,9 +417,10 @@
                 const txt = doc.getElementById('nuevo-mensaje').value.trim();
                 if (!txt) return;
                 let { error } = await db.from('mensajes').insert([{ usuario: nombreActual, texto: txt }]);
-                if (error) return;
-                doc.getElementById('nuevo-mensaje').value = '';
-                cargarMensajes(); 
+                if (!error) {
+                    doc.getElementById('nuevo-mensaje').value = '';
+                    cargarMensajes(); 
+                }
             });
 
             doc.getElementById('nueva-tarea').addEventListener('keypress', (e) => { if (e.key === 'Enter') doc.getElementById('btn-add-tarea').click(); });
