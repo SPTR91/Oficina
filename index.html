@@ -15,26 +15,26 @@
 <body>
 
     <h2>Oficina Virtual Ágil</h2>
-    <p>Ingresa tu nombre para entrar a la sesión compartida:</p>
-    <input type="text" id="nombre-usuario" placeholder="Ej. Manuel" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px;">
+    <p>Ingresa tu nombre para entrar a tu espacio de trabajo:</p>
+    <input type="text" id="nombre-usuario" placeholder="Ej. Manuel" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px; width: 200px;">
     <br>
     <button id="btn-pip" class="btn-main">🚀 Conectar y Abrir Ventana Flotante</button>
 
     <div class="admin-panel">
-        <h3 style="margin-top: 0; color: #1a73e8;">⚙️ Panel de Administración</h3>
-        <p style="font-size: 14px; color: #555;">Gestiona la base de datos de tu equipo en la nube.</p>
+        <h3 style="margin-top: 0; color: #1a73e8;">⚙️ Mi Administración Personal</h3>
+        <p style="font-size: 14px; color: #555;">Gestiona <b>únicamente tus tareas</b>. Recuerda escribir tu nombre arriba primero.</p>
         
         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <button id="btn-exportar" class="btn-main" style="background-color: #0f9d58; font-size: 14px;">📊 Exportar Tareas (CSV)</button>
-            <button id="btn-borrar" class="btn-main" style="background-color: #d93025; font-size: 14px;">🗑️ Limpiar Historial (Admin)</button>
+            <button id="btn-exportar" class="btn-main" style="background-color: #0f9d58; font-size: 14px;">📊 Exportar MIS Tareas (CSV)</button>
+            <button id="btn-borrar" class="btn-main" style="background-color: #d93025; font-size: 14px;">🗑️ Limpiar MI Historial</button>
         </div>
         
         <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 15px;">
         
-        <p style="font-size: 14px; font-weight: bold; color: #333; margin-bottom: 5px;">Importar tareas antiguas:</p>
+        <p style="font-size: 14px; font-weight: bold; color: #333; margin-bottom: 5px;">Importar tareas hacia mi cuenta:</p>
         <input type="file" id="file-csv" accept=".csv" style="margin-bottom: 10px; font-size: 14px;">
         <br>
-        <button id="btn-importar" class="btn-main" style="background-color: #555; font-size: 13px; padding: 8px 15px;">📥 Cargar a la nube</button>
+        <button id="btn-importar" class="btn-main" style="background-color: #555; font-size: 13px; padding: 8px 15px;">📥 Cargar a mi nube</button>
     </div>
 
     <!-- VENTANA FLOTANTE -->
@@ -72,9 +72,12 @@
             
             .msg-confirm { color: #0f9d58; font-weight: bold; font-size: 12px; display: none; margin-bottom: 2px; }
             
+            .btn-transfer { background: none; border: 1px solid #1a73e8; color: #1a73e8; cursor: pointer; font-size: 12px; padding: 4px 6px; border-radius: 4px; margin-left: 5px; height: fit-content; align-self: center; transition: 0.2s;}
+            .btn-transfer:hover { background: #e8f0fe; }
+            
             .mensaje { margin-bottom: 8px; padding: 8px; background: #f8f9fa; border-radius: 8px; font-size: 13px; border-left: 3px solid #1a73e8; }
             .msg-usuario { font-weight: bold; color: #1a73e8; margin-bottom: 2px; }
-            .btn-delete-note { background: none; border: 1px solid #ccc; color: #d93025; cursor: pointer; font-size: 11px; padding: 4px 6px; border-radius: 4px; transition: 0.2s; }
+            .btn-delete-note { background: none; border: 1px solid #ccc; color: #d93025; cursor: pointer; font-size: 11px; padding: 4px 6px; border-radius: 4px; margin-left: 5px; height: fit-content; align-self: center; }
             .btn-delete-note:hover { background: #ffe6e6; }
         </style>
         
@@ -94,7 +97,7 @@
                 <select id="prioridad-tarea" class="prio-input" title="Prioridad"><option value="3" selected>🟢</option><option value="2">🟡</option><option value="1">🔴</option></select>
                 <button class="btn-accion" id="btn-add-tarea">+</button>
             </div>
-            <div id="lista-tareas" style="font-size: 13px; color: #666;">Cargando tareas...</div>
+            <div id="lista-tareas" style="font-size: 13px; color: #666;">Cargando tus tareas...</div>
         </div>
 
         <div id="tab-notas" class="contenido-tab">
@@ -106,21 +109,21 @@
         </div>
 
         <div id="tab-chat" class="contenido-tab">
-            <div id="lista-mensajes" style="height: 320px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; color: #666;">Cargando chat...</div>
+            <div id="lista-mensajes" style="height: 320px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; color: #666;">Cargando chat del equipo...</div>
             <div style="display: flex; gap: 5px;">
-                <input type="text" id="nuevo-mensaje" placeholder="Mensaje..." style="flex-grow: 1;">
+                <input type="text" id="nuevo-mensaje" placeholder="Mensaje para el equipo..." style="flex-grow: 1;">
                 <button class="btn-accion" id="btn-enviar-msg">Enviar</button>
             </div>
         </div>
 
         <div id="tab-historial" class="contenido-tab">
-            <div id="lista-historial" style="font-size: 13px; color: #666;">Cargando historial...</div>
+            <div id="lista-historial" style="font-size: 13px; color: #666;">Cargando tu historial...</div>
         </div>
     </div>
 
     <script>
         // ==========================================
-        // 1. CONEXIÓN A SUPABASE
+        // 1. CONEXIÓN A SUPABASE (YA CON TUS LLAVES)
         // ==========================================
         const supabaseUrl = 'https://msplydphthiditnoylcq.supabase.co'; 
         const supabaseKey = 'sb_publishable_YbzzNtr9z_QlM6fJJIy3ig_UlzpRO0J';
@@ -129,12 +132,21 @@
         let nombreActual = "";
 
         // ==========================================
-        // 2. FUNCIONES DEL PANEL ADMIN
+        // 2. FUNCIONES DEL PANEL ADMIN (PERSONALIZADO)
         // ==========================================
+        
+        function getUsuarioAdmin() {
+            const usr = document.getElementById('nombre-usuario').value.trim();
+            if(!usr) { alert("⚠️ Escribe tu nombre en la casilla superior primero."); return null; }
+            return usr;
+        }
+
         document.getElementById('btn-exportar').addEventListener('click', async () => {
-            let { data, error } = await db.from('tareas').select('*').order('created_at', { ascending: true });
+            const usr = getUsuarioAdmin(); if(!usr) return;
+            
+            let { data, error } = await db.from('tareas').select('*').eq('asignado_a', usr).order('created_at', { ascending: true });
             if(error) return alert("Error: " + error.message);
-            if(!data || data.length === 0) return alert("No hay tareas para exportar.");
+            if(!data || data.length === 0) return alert("No tienes tareas para exportar.");
             
             let csv = "\uFEFFEstado,Prioridad,Tarea,Hora Limite,Fecha Creacion,Fecha Finalizada\n";
             data.forEach(t => {
@@ -146,21 +158,25 @@
             });
             let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             let link = document.createElement("a"); link.href = URL.createObjectURL(blob);
-            link.download = "Reporte_Oficina.csv"; link.click();
+            link.download = `Reporte_${usr}.csv`; link.click();
         });
 
         document.getElementById('btn-borrar').addEventListener('click', async () => {
+            const usr = getUsuarioAdmin(); if(!usr) return;
+            
             const pass = prompt("⚠️ Ingresa la contraseña de administrador:");
             if (pass === "admin123") {
-                if (confirm("¿Estás seguro? Se borrarán permanentemente las tareas completadas de la nube.")) {
-                    let { error } = await db.from('tareas').delete().eq('completada', true);
+                if (confirm(`¿Seguro? Se borrarán permanentemente TUS tareas completadas.`)) {
+                    let { error } = await db.from('tareas').delete().eq('completada', true).eq('asignado_a', usr);
                     if(error) alert("Error: " + error.message);
-                    else alert("✅ Historial limpiado exitosamente.");
+                    else alert("✅ Tu historial ha sido limpiado exitosamente.");
                 }
             } else if (pass !== null) alert("❌ Contraseña incorrecta.");
         });
 
         document.getElementById('btn-importar').addEventListener('click', () => {
+            const usr = getUsuarioAdmin(); if(!usr) return;
+            
             const fileInput = document.getElementById('file-csv');
             if (!fileInput.files.length) return alert("Selecciona un archivo .csv");
             
@@ -180,6 +196,7 @@
                     const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim());
                     if (row.length < 5) continue;
                     tareasAInsertar.push({
+                        asignado_a: usr, // Ahora se asignan a ti automáticamente
                         completada: row[0] === "Completada",
                         prioridad: row[1].includes("Alta") ? 1 : (row[1].includes("Media") ? 2 : 3),
                         texto: row[2],
@@ -190,7 +207,7 @@
                 }
                 
                 if (tareasAInsertar.length === 0) return alert("Archivo vacío o formato inválido.");
-                alert(`⏳ Subiendo ${tareasAInsertar.length} tareas a la nube...`);
+                alert(`⏳ Subiendo ${tareasAInsertar.length} tareas a tu cuenta...`);
                 let { error } = await db.from('tareas').insert(tareasAInsertar);
                 if(error) alert("❌ Error: " + error.message); else alert("✅ ¡Importación exitosa!");
             };
@@ -210,7 +227,7 @@
 
             if (!('documentPictureInPicture' in window)) return alert("Tu navegador no soporta PiP.");
 
-            const pipWindow = await documentPictureInPicture.requestWindow({ width: 380, height: 500 });
+            const pipWindow = await documentPictureInPicture.requestWindow({ width: 400, height: 500 });
             pipWindow.document.body.innerHTML = pipContent.innerHTML;
             const doc = pipWindow.document;
             doc.getElementById('saludo-usuario').innerText = `Oficina de ${nombreActual}`;
@@ -226,35 +243,54 @@
 
             const linkify = (text) => text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank" style="color:#1a73e8; text-decoration:none;">${url}</a>`);
 
-            // --- TAREAS ---
+            // --- TAREAS (Filtradas por Usuario + Función de Transferir) ---
             async function cargarTareas() {
-                let { data: tareas, error } = await db.from('tareas').select('*').eq('completada', false).order('prioridad', { ascending: true }).order('created_at', { ascending: true });
+                // Solo traemos las tuyas
+                let { data: tareas, error } = await db.from('tareas').select('*').eq('completada', false).eq('asignado_a', nombreActual).order('prioridad', { ascending: true }).order('created_at', { ascending: true });
                 const lista = doc.getElementById('lista-tareas');
                 if (error) return lista.innerHTML = `<span style="color:red">Error: ${error.message}</span>`;
-                if (tareas.length === 0) return lista.innerHTML = '<div style="text-align:center; margin-top:20px;">No hay tareas pendientes.</div>';
+                if (tareas.length === 0) return lista.innerHTML = '<div style="text-align:center; margin-top:20px;">No tienes tareas pendientes. ¡Buen trabajo!</div>';
 
                 lista.innerHTML = '';
                 tareas.forEach(t => {
                     const div = document.createElement('div');
                     div.className = 'task-item';
+                    
+                    // Se agregó el botón 📤 para transferir
                     div.innerHTML = `
-                        <div class="prio-bar prio-${t.prioridad}" id="prio-${t.id}" title="Clic para cambiar prioridad"></div>
+                        <div class="prio-bar prio-${t.prioridad}" id="prio-${t.id}" title="Cambiar prioridad"></div>
                         <input type="checkbox" id="chk-${t.id}">
                         <div class="task-content">
                             <span class="task-text">${linkify(t.texto)}</span>
                             <span class="msg-confirm" id="conf-${t.id}">¿Confirmar? Clic de nuevo</span>
                             <span class="task-time">${t.hora_vencimiento ? '⏰ '+t.hora_vencimiento : 'Sin hora'}</span>
-                        </div>`;
+                        </div>
+                        <button class="btn-transfer" id="trans-${t.id}" title="Transferir (Delegar) a alguien más">➡️</button>
+                    `;
                     lista.appendChild(div);
                     
+                    // Transferir tarea
+                    doc.getElementById(`trans-${t.id}`).addEventListener('click', async () => {
+                        let receptor = prompt("¿A qué miembro del equipo deseas enviarle esta tarea? (Ej. Yosimar)");
+                        if (receptor && receptor.trim() !== "") {
+                            let { error } = await db.from('tareas').update({ asignado_a: receptor.trim() }).eq('id', t.id);
+                            if(error) alert(error.message); 
+                            else { 
+                                alert(`✅ Tarea enviada al tablero de ${receptor.trim()}`); 
+                                cargarTareas(); // Desaparecerá de tu vista automáticamente
+                            }
+                        }
+                    });
+                    
+                    // Prioridad
                     doc.getElementById(`prio-${t.id}`).addEventListener('click', async () => {
                         let { error } = await db.from('tareas').update({ prioridad: t.prioridad === 3 ? 2 : (t.prioridad === 2 ? 1 : 3) }).eq('id', t.id);
                         if(error) alert(error.message); else cargarTareas(); 
                     });
                     
+                    // Completar
                     const chk = doc.getElementById(`chk-${t.id}`);
                     const confMsg = doc.getElementById(`conf-${t.id}`);
-                    
                     chk.addEventListener('click', async (e) => {
                         if (!chk.dataset.confirming) {
                             e.preventDefault(); 
@@ -277,43 +313,33 @@
             doc.getElementById('btn-add-tarea').addEventListener('click', async () => {
                 const txt = doc.getElementById('nueva-tarea').value.trim();
                 if (!txt) return;
-                let { error } = await db.from('tareas').insert([{ texto: txt, hora_vencimiento: doc.getElementById('hora-tarea').value || null, prioridad: parseInt(doc.getElementById('prioridad-tarea').value)||3 }]);
+                // La tarea nueva se te asigna a ti por defecto
+                let { error } = await db.from('tareas').insert([{ asignado_a: nombreActual, texto: txt, hora_vencimiento: doc.getElementById('hora-tarea').value || null, prioridad: parseInt(doc.getElementById('prioridad-tarea').value)||3 }]);
                 if (error) { alert("Error: " + error.message); return; }
                 doc.getElementById('nueva-tarea').value = ''; doc.getElementById('hora-tarea').value = '';
                 cargarTareas(); 
             });
 
-            // --- NOTAS (Con borrado ágil sin pop-up) ---
+            // --- NOTAS (Globales para el equipo) ---
             async function cargarNotas() {
                 let { data: notas, error } = await db.from('notas').select('*').order('created_at', { ascending: false });
                 const lista = doc.getElementById('lista-notas');
                 if (error) return lista.innerHTML = `<span style="color:red">Error: ${error.message}</span>`;
-                if (notas.length === 0) return lista.innerHTML = '<div style="text-align:center; margin-top:20px;">No hay notas.</div>';
+                if (notas.length === 0) return lista.innerHTML = '<div style="text-align:center; margin-top:20px;">No hay notas del equipo.</div>';
 
                 lista.innerHTML = '';
                 notas.forEach(n => {
                     const div = document.createElement('div');
                     div.className = 'task-item';
-                    div.innerHTML = `
-                        <div class="task-content">
-                            <span class="task-text">📌 ${linkify(n.texto)}</span>
-                        </div>
-                        <button class="btn-delete-note" id="del-nota-${n.id}" title="Doble clic para borrar">✖</button>
-                    `;
+                    div.innerHTML = `<div class="task-content"><span class="task-text">📌 ${linkify(n.texto)}</span></div><button class="btn-delete-note" id="del-nota-${n.id}" title="Doble clic para borrar">✖</button>`;
                     lista.appendChild(div);
-                    
-                    // Lógica de Doble Clic para borrar nota
                     const btnDel = doc.getElementById(`del-nota-${n.id}`);
                     btnDel.addEventListener('click', async () => {
                         if (!btnDel.dataset.confirming) {
-                            btnDel.dataset.confirming = 'true';
-                            btnDel.innerHTML = '¿Seguro?';
-                            btnDel.style.fontWeight = 'bold';
+                            btnDel.dataset.confirming = 'true'; btnDel.innerHTML = '¿Seguro?'; btnDel.style.fontWeight = 'bold';
                             setTimeout(() => {
                                 if (doc.getElementById(`del-nota-${n.id}`) && btnDel.dataset.confirming) {
-                                    btnDel.dataset.confirming = '';
-                                    btnDel.innerHTML = '✖';
-                                    btnDel.style.fontWeight = 'normal';
+                                    btnDel.dataset.confirming = ''; btnDel.innerHTML = '✖'; btnDel.style.fontWeight = 'normal';
                                 }
                             }, 3000);
                         } else {
@@ -328,14 +354,14 @@
                 const txt = doc.getElementById('nueva-nota').value.trim();
                 if (!txt) return;
                 let { error } = await db.from('notas').insert([{ texto: txt }]);
-                if (error) { alert("Error: " + error.message); return; }
+                if (error) return;
                 doc.getElementById('nueva-nota').value = '';
                 cargarNotas(); 
             });
 
-            // --- HISTORIAL ---
+            // --- HISTORIAL (Solo ves el tuyo) ---
             async function cargarHistorial() {
-                let { data: tareas, error } = await db.from('tareas').select('*').eq('completada', true).order('fecha_completada', { ascending: false }).limit(50);
+                let { data: tareas, error } = await db.from('tareas').select('*').eq('completada', true).eq('asignado_a', nombreActual).order('fecha_completada', { ascending: false }).limit(50);
                 const lista = doc.getElementById('lista-historial');
                 if (error) return lista.innerHTML = `<span style="color:red">Error: ${error.message}</span>`;
                 
@@ -347,7 +373,7 @@
                 });
             }
 
-            // --- CHAT ---
+            // --- CHAT (Global para todos) ---
             async function cargarMensajes() {
                 let { data: mensajes, error } = await db.from('mensajes').select('*').order('created_at', { ascending: false }).limit(50);
                 const lista = doc.getElementById('lista-mensajes');
@@ -365,12 +391,11 @@
                 const txt = doc.getElementById('nuevo-mensaje').value.trim();
                 if (!txt) return;
                 let { error } = await db.from('mensajes').insert([{ usuario: nombreActual, texto: txt }]);
-                if (error) { alert("Error al enviar: " + error.message); return; }
+                if (error) return;
                 doc.getElementById('nuevo-mensaje').value = '';
                 cargarMensajes(); 
             });
 
-            // Eventos de teclado (Enter)
             doc.getElementById('nueva-tarea').addEventListener('keypress', (e) => { if (e.key === 'Enter') doc.getElementById('btn-add-tarea').click(); });
             doc.getElementById('nueva-nota').addEventListener('keypress', (e) => { if (e.key === 'Enter') doc.getElementById('btn-add-nota').click(); });
             doc.getElementById('nuevo-mensaje').addEventListener('keypress', (e) => { if (e.key === 'Enter') doc.getElementById('btn-enviar-msg').click(); });
