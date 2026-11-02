@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oficina Virtual v3.2</title>
+    <title>Oficina Virtual v3.3</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* ==========================================
@@ -30,43 +30,45 @@
         
         /* Layout Web: 2 Columnas */
         #app-container { display: none; max-width: 1200px; margin: 0 auto; }
-        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+        .grid-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; align-items: stretch; min-height: 85vh; }
         
-        /* Layout Flotante (PiP): 1 Columna y sin padding extra */
+        /* Layout Flotante (PiP) */
         .pip-mode body { padding: 8px; background: white; }
-        .pip-mode .grid-layout { grid-template-columns: 1fr; gap: 10px; }
-        .pip-mode .panel-tareas { display: flex !important; }
-        .pip-mode .panel-utilidades { display: flex !important; height: auto !important; max-height: 400px; }
+        .pip-mode .grid-layout { grid-template-columns: 1fr; gap: 15px; display: flex; flex-direction: column; min-height: 100vh;}
+        .pip-mode .panel-tareas { flex: 1 1 auto; height: auto; min-height: 250px; border:none; box-shadow:none; padding:0;}
+        .pip-mode .panel-utilidades { flex: 0 0 250px; border:none; box-shadow:none; padding:0; border-top: 1px solid var(--border); padding-top: 10px;}
         .pip-mode .hide-in-pip { display: none !important; }
 
         /* Paneles */
-        .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; height: 85vh; min-height: 500px; }
+        .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; }
+        .panel-tareas { overflow-y: auto; max-height: 85vh; }
+        .panel-utilidades { max-height: 85vh; }
         
-        .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; position: sticky; top: -16px; background: white; z-index: 10; padding-top: 16px;}
         .header-title { font-size: 14px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;}
         .version-badge { font-size: 10px; background: #eef2f5; color: var(--secondary); padding: 2px 6px; border-radius: 4px; }
         
         .top-controls { display: flex; gap: 8px; }
-        .btn-txt-sm { background: none; border: 1px solid var(--border); color: var(--secondary); border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s; }
+        .btn-txt-sm { background: none; border: 1px solid var(--border); color: var(--secondary); border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s; display: flex; align-items: center; gap: 4px;}
         .btn-txt-sm:hover { border-color: var(--primary); color: var(--primary); }
         .btn-txt-sm.active-alert { background: #fdf2f2; border-color: var(--danger); color: var(--danger); }
 
         /* Pestañas */
         .tabs { display: flex; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
         .tabs::-webkit-scrollbar { display: none; }
-        .tab-btn { background: none; border: none; cursor: pointer; color: var(--secondary); font-weight: 600; font-size: 11px; padding: 8px 4px; position: relative; letter-spacing: 0.5px; display: flex; align-items: center; gap: 4px;}
+        .tab-btn { background: none; border: none; cursor: pointer; color: var(--secondary); font-weight: 600; font-size: 11px; padding: 8px 4px; position: relative; letter-spacing: 0.5px; display: flex; align-items: center; gap: 4px; flex-shrink: 0;}
         .tab-btn.active { color: var(--primary); }
         .tab-btn.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--primary); }
         .dot-indicator { display: none; width: 6px; height: 6px; background-color: var(--danger); border-radius: 50%; }
 
-        .contenido-tab { flex-grow: 1; overflow-y: auto; display: none; padding-right: 5px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
-        .contenido-tab.active { display: flex; flex-direction: column; }
+        .contenido-tab { flex-grow: 1; overflow-y: auto; display: none; padding-right: 5px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; flex-direction: column;}
+        .contenido-tab.active { display: flex; }
 
         /* Formularios y Búsqueda */
-        .search-bar { width: 100%; padding: 8px 10px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 15px; font-size: 13px; background: #fdfdfd; outline: none; transition: border 0.2s; }
+        .search-bar { width: 100%; padding: 8px 10px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 15px; font-size: 13px; background: #fdfdfd; outline: none; transition: border 0.2s; flex-shrink:0;}
         .search-bar:focus { border-color: var(--accent); }
         
-        .input-group { display: flex; gap: 6px; margin-bottom: 15px; align-items: flex-start; }
+        .input-group { display: flex; gap: 6px; margin-bottom: 15px; align-items: flex-start; flex-shrink:0;}
         textarea.task-input { flex-grow: 1; padding: 8px 10px; border-radius: 4px; border: 1px solid var(--border); font-size: 13px; outline: none; resize: vertical; min-height: 35px; max-height: 120px; font-family: inherit;}
         input[type="text"], input[type="datetime-local"], select { padding: 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 12px; outline: none; background: white;}
         .prio-input { width: 80px; color: var(--secondary); cursor: pointer; height: 35px;}
@@ -104,16 +106,17 @@
         .complete-bar::after { content: '›'; color: #cbd5e1; font-weight: bold; }
         
         .resolve-menu { display: none; flex-direction: column; justify-content: center; gap: 4px; padding-left: 8px; border-left: 1px solid var(--border); margin-left: auto;}
-        .btn-resolve { background: white; border: 1px solid var(--border); color: var(--secondary); font-size: 10px; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase;}
-        .btn-resolve.actualizar:hover { border-color: var(--accent); color: var(--accent); }
-        .btn-resolve.finalizar { border-color: var(--border); }
-        .btn-resolve.finalizar:hover { background: var(--prio-3); color: white; border-color: var(--prio-3); }
+        .btn-resolve { background: white; border: 1px solid var(--border); color: var(--secondary); font-size: 10px; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 4px;}
+        .btn-resolve.actualizar { color: #8e44ad; border-color: #d2b4de; }
+        .btn-resolve.actualizar:hover { background: #f4ecf7; }
+        .btn-resolve.finalizar { color: var(--prio-3); border-color: #a9dfbf; }
+        .btn-resolve.finalizar:hover { background: #e9f7ef; }
 
         .msg-confirm { color: var(--prio-3); font-weight: bold; font-size: 10px; display: none; margin-top: 4px; text-transform: uppercase;}
 
         /* Historial de Actualizaciones (Mini Hilos) */
-        .updates-list { display: none; margin-top: 8px; padding-left: 8px; border-left: 2px solid var(--border); font-size: 11px; }
-        .update-item { margin-bottom: 6px; color: #475569; }
+        .updates-list { display: none; margin-top: 8px; padding-left: 8px; border-left: 2px solid var(--accent); font-size: 11px; background: #fdfdfd;}
+        .update-item { margin-bottom: 6px; color: #475569; border-bottom: 1px dashed var(--border); padding-bottom: 4px;}
         .update-item span { font-weight: bold; color: var(--secondary); font-family: monospace;}
 
         /* Banner Enfoque */
@@ -124,20 +127,21 @@
         .msg-usuario { font-size: 10px; font-weight: 600; color: var(--secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;}
         .msg-texto { color: #333; white-space: pre-wrap; }
 
-        .equipo-card { flex-direction: column; padding: 12px 0; }
+        .equipo-card { flex-direction: column; padding: 12px 0; border-bottom: 1px solid var(--border);}
         .equipo-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .equipo-name { font-weight: 600; font-size: 13px; text-transform: uppercase; }
         .equipo-metrics { font-size: 11px; color: var(--secondary); line-height: 1.6; }
         .equipo-metrics span { font-weight: bold; color: var(--primary); }
 
         /* Categorías Visuales */
-        .cat-header { font-size: 10px; font-weight: bold; color: var(--secondary); text-transform: uppercase; letter-spacing: 1px; padding: 10px 0 4px 0; border-bottom: 1px solid var(--border); margin-top: 10px; display: none;}
+        .cat-header { font-size: 10px; font-weight: bold; color: var(--secondary); text-transform: uppercase; letter-spacing: 1px; padding: 15px 0 4px 0; border-bottom: 1px solid var(--border); display: none; display: flex; align-items: center; gap: 6px;}
         .task-item.futuro { opacity: 0.6; }
 
         /* Autenticación */
         #auth-container { max-width: 320px; margin: 40px auto; background: white; padding: 30px; border-radius: 6px; border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .auth-label { display: block; font-size: 11px; font-weight: 600; color: var(--secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;}
-        .auth-input { width: 100%; margin-bottom: 16px; padding: 10px; border-radius: 4px; border: 1px solid var(--border); font-size: 13px;}
+        .auth-input { width: 100%; margin-bottom: 16px; padding: 10px; border-radius: 4px; border: 1px solid var(--border); font-size: 13px; outline:none;}
+        .auth-input:focus { border-color: var(--accent); }
         .auth-link { color: var(--accent); text-decoration: none; font-size: 12px; font-weight: 500; }
     </style>
 </head>
@@ -185,8 +189,8 @@
             <div class="panel panel-tareas">
                 <div class="header-panel">
                     <div class="header-title">
-                        <span id="saludo-usuario">Usuario</span>
-                        <span class="version-badge">v3.2</span>
+                        <span id="saludo-usuario" style="text-transform: uppercase;">Usuario</span>
+                        <span class="version-badge">v3.3</span>
                     </div>
                     <div class="top-controls">
                         <button id="btn-mute" class="btn-txt-sm" title="Sonido">🔊</button>
@@ -198,10 +202,10 @@
                     <span>🎯 ENFOCADO</span> <span style="font-size:10px; color: var(--secondary);">(Clic para salir)</span>
                 </div>
 
-                <div class="input-group">
+                <div class="input-group" style="padding-bottom: 10px; border-bottom: 1px dashed var(--border);">
                     <textarea id="nueva-tarea" class="task-input" placeholder="Nueva tarea... (Shift+Enter para salto de línea)"></textarea>
                 </div>
-                <div class="input-group" style="margin-top: -8px;">
+                <div class="input-group" style="margin-top: -10px;">
                     <input type="datetime-local" id="fecha-tarea" class="datetime-input" title="Fecha y Hora">
                     <select id="prioridad-tarea" class="prio-input">
                         <option value="3" selected>Baja</option>
@@ -218,7 +222,7 @@
                 <div id="cat-hoy" class="cat-header">📅 Para Hoy</div>
                 <div id="lista-hoy"></div>
                 
-                <div id="cat-sinfecha" class="cat-header">📥 Pendientes (Sin Fecha)</div>
+                <div id="cat-sinfecha" class="cat-header" style="color: var(--accent);">📥 Pendientes (Sin Fecha)</div>
                 <div id="lista-sinfecha"></div>
                 
                 <div id="cat-futuro" class="cat-header hide-in-pip">⏭️ A Futuro</div>
@@ -248,10 +252,10 @@
                 <!-- NOTAS -->
                 <div id="tab-notas" class="contenido-tab">
                     <div class="input-group">
-                        <input type="text" id="nueva-nota" class="task-input" placeholder="Nota o enlace...">
+                        <input type="text" id="nueva-nota" class="task-input" placeholder="Nota o enlace..." style="height:35px;">
                         <button class="btn-accion" id="btn-add-nota">Add</button>
                     </div>
-                    <div id="lista-notas"></div>
+                    <div id="lista-notas" style="flex-grow: 1; overflow-y: auto;"></div>
                 </div>
 
                 <!-- HISTORIAL (Solo Web) -->
@@ -260,7 +264,7 @@
                         <span>Registro de Tareas Completadas</span>
                         <button id="btn-limpiar-historial" class="btn-txt-sm" style="color:var(--danger); border-color:var(--danger);">Vaciar</button>
                     </div>
-                    <div id="lista-historial"></div>
+                    <div id="lista-historial" style="flex-grow: 1; overflow-y: auto;"></div>
                 </div>
                 
                 <!-- EQUIPO (Admin - Solo Web) -->
@@ -269,7 +273,7 @@
                         <span style="font-size: 11px; color: var(--secondary);">PANEL SUPERVISOR EN VIVO</span>
                         <button id="btn-limpiar-chat" class="btn-txt-sm" style="color: var(--danger); border-color: var(--danger);">Borrar Chat Global</button>
                     </div>
-                    <div id="lista-equipo"></div>
+                    <div id="lista-equipo" style="flex-grow: 1; overflow-y: auto;"></div>
                 </div>
 
             </div> <!-- Fin Panel Derecho -->
@@ -377,10 +381,9 @@
             document.getElementById('auth-container').style.display = 'none'; document.getElementById('app-container').style.display = 'block';
             document.getElementById('saludo-usuario').innerText = nombreActual;
             
-            if (esAdminGlobal) document.getElementById('btn-tab-equipo').style.display = 'inline-block';
+            if (esAdminGlobal) document.getElementById('btn-tab-equipo').style.display = 'flex';
             if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
             
-            // Registrar login como actividad
             await db.from('usuarios').update({ ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual);
             iniciarApp();
         };
@@ -407,7 +410,7 @@
         let currentTab = 'chat'; 
 
         function iniciarApp() {
-            // Pestañas (Solo columna derecha)
+            // Pestañas
             ['chat', 'notas', 'historial', 'equipo'].forEach(p => {
                 const b = document.getElementById(`btn-tab-${p}`);
                 if(b) b.onclick = () => {
@@ -420,11 +423,10 @@
                 };
             });
 
-            // --- FUNCIÓN PRINCIPAL: RENDER TAREAS ---
+            // --- RENDER TAREAS (LÓGICA INVERTIDA DE ACTUALIZACIÓN) ---
             async function renderTareas(rt = false) {
                 let { data: t } = await db.from('tareas').select('*').eq('completada', false).ilike('asignado_a', nombreActual).order('prioridad', { ascending: true }).order('created_at', { ascending: true });
                 
-                // Limpiar contenedores
                 const lVencidas = document.getElementById('lista-vencidas'); lVencidas.innerHTML = '';
                 const lHoy = document.getElementById('lista-hoy'); lHoy.innerHTML = '';
                 const lSinFecha = document.getElementById('lista-sinfecha'); lSinFecha.innerHTML = '';
@@ -434,9 +436,7 @@
                 ultimasTareasCargadas = t.length;
 
                 const tF = tareaEnfocadaId ? t.filter(x => x.id === tareaEnfocadaId) : t;
-                if (!tF.length && !tareaEnfocadaId) {
-                    lSinFecha.innerHTML = `<div style="font-size:12px; color:var(--secondary); padding: 10px;">Bandeja limpia.</div>`;
-                }
+                if (!tF.length && !tareaEnfocadaId) { lSinFecha.innerHTML = `<div style="font-size:12px; color:var(--secondary); padding: 10px;">Bandeja limpia.</div>`; }
 
                 const ahora = new Date();
                 const hoyInicio = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
@@ -444,8 +444,7 @@
 
                 tF.forEach(item => {
                     const esVencida = item.fecha_programada && new Date(item.fecha_programada) < ahora;
-                    let destino = lSinFecha;
-                    let claseFuturo = '';
+                    let destino = lSinFecha; let claseFuturo = '';
                     
                     if (item.fecha_programada) {
                         const fp = new Date(item.fecha_programada);
@@ -456,7 +455,6 @@
 
                     const div = document.createElement('div'); div.className = `task-item ${claseFuturo}`;
                     
-                    // Historial JSON
                     const hist = Array.isArray(item.actualizaciones) ? item.actualizaciones : [];
                     const histHtml = hist.length > 0 ? hist.map(h => `<div class="update-item"><span>[${h.fecha}]</span> ${h.texto}</div>`).join('') : '';
                     const infoBtn = hist.length > 0 ? `<button class="action-link info-btn" style="color:var(--accent);">[+ INFO]</button>` : '';
@@ -474,7 +472,6 @@
                                 ${infoBtn}
                             </div>
                             
-                            <!-- Cajas de Acción Ocultas -->
                             <div class="action-box box-trans inline">
                                 <input type="text" class="action-input input-trans" placeholder="Usuario destino...">
                                 <button class="btn-txt-sm btn-ok-trans">OK</button>
@@ -487,21 +484,21 @@
 
                             <div class="updates-list">${histHtml}</div>
                             
-                            <!-- Caja de Actualizar/Avanzar -->
+                            <!-- Caja de Actualizar (Lógica Invertida) -->
                             <div class="action-box box-update">
-                                <span style="font-size:10px; font-weight:bold; color:var(--secondary);">INGRESAR ACTUALIZACIÓN Y REPROGRAMAR</span>
-                                <textarea class="action-input input-upd-texto" placeholder="Detalle de la actualización..." style="resize:vertical; min-height:40px;"></textarea>
+                                <span style="font-size:10px; font-weight:bold; color:var(--secondary);">INGRESAR NUEVA TAREA/MISIÓN Y REPROGRAMAR</span>
+                                <textarea class="action-input input-upd-texto" placeholder="Lo que escribas aquí reemplazará a la tarea principal. Lo anterior pasará al historial." style="resize:vertical; min-height:40px; border-color:var(--accent);"></textarea>
                                 <div style="display:flex; gap:6px;">
-                                    <input type="datetime-local" class="action-input input-upd-fecha">
-                                    <button class="btn-accion btn-ok-update" style="flex-grow:1;">Guardar Hito</button>
+                                    <input type="datetime-local" class="action-input input-upd-fecha" title="Nueva Fecha a Futuro">
+                                    <button class="btn-accion btn-ok-update" style="flex-grow:1;">Actualizar Ticket</button>
                                 </div>
                             </div>
                             
-                            <div class="msg-confirm">CONFIRMAR FINALIZACIÓN</div>
+                            <div class="msg-confirm">¿CONFIRMAR? CLIC DE NUEVO</div>
                         </div>
                         
-                        <!-- BARRA DERECHA (Acciones de Progreso) -->
-                        <div class="complete-bar" title="Progreso"></div>
+                        <!-- BARRA DERECHA -->
+                        <div class="complete-bar" title="Avanzar"></div>
                         
                         <!-- MENÚ DESLIZABLE DERECHO -->
                         <div class="resolve-menu">
@@ -511,25 +508,18 @@
                     `;
                     destino.appendChild(div);
                     
-                    // Lógica Básica
                     div.querySelector('.prio-indicator').onclick = async () => { await db.from('tareas').update({ prioridad: item.prioridad === 3 ? 2 : (item.prioridad === 2 ? 1 : 3) }).eq('id', item.id); renderTareas(); };
                     
-                    // Enfoque
                     div.querySelector('.focus-btn').onclick = async () => { 
-                        tareaEnfocadaId = item.id; 
-                        document.getElementById('banner-enfoque').style.display = 'flex'; 
-                        await db.from('usuarios').update({ tarea_enfocada: item.id }).eq('nombre', nombreActual);
-                        renderTareas(); 
+                        tareaEnfocadaId = item.id; document.getElementById('banner-enfoque').style.display = 'flex'; 
+                        await db.from('usuarios').update({ tarea_enfocada: item.id }).eq('nombre', nombreActual); renderTareas(); 
                     };
                     
-                    // Info Historial
                     const btnInfo = div.querySelector('.info-btn');
                     if(btnInfo) btnInfo.onclick = () => { const ul = div.querySelector('.updates-list'); ul.style.display = ul.style.display === 'block' ? 'none' : 'block'; };
 
-                    // Ocultar cajas al abrir otra
                     const hideBoxes = () => { div.querySelectorAll('.action-box').forEach(b => b.style.display = 'none'); };
 
-                    // Delegar
                     const bTrans = div.querySelector('.box-trans'); const iTrans = div.querySelector('.input-trans');
                     div.querySelector('.trans-btn').onclick = () => { const vis = bTrans.style.display === 'flex'; hideBoxes(); if(!vis) { bTrans.style.display = 'flex'; iTrans.focus(); } };
                     div.querySelector('.btn-ok-trans').onclick = async () => { 
@@ -539,7 +529,6 @@
                         await db.from('tareas').update({ asignado_a: d }).eq('id', item.id); renderTareas(); 
                     };
 
-                    // Editar (Corrección texto)
                     const bEdit = div.querySelector('.box-edit'); const iEdit = div.querySelector('.input-edit');
                     div.querySelector('.edit-btn').onclick = () => { const vis = bEdit.style.display === 'flex'; hideBoxes(); if(!vis) { bEdit.style.display = 'flex'; iEdit.focus(); } };
                     div.querySelector('.btn-ok-edit').onclick = async () => {
@@ -547,44 +536,45 @@
                         await db.from('tareas').update({ texto: nt }).eq('id', item.id); renderTareas();
                     };
 
-                    // MENÚ DERECHO (Actualizar / Finalizar)
+                    // MENÚ DERECHO
                     const cBar = div.querySelector('.complete-bar'); const rMenu = div.querySelector('.resolve-menu');
                     cBar.onclick = () => { 
                         const vis = rMenu.style.display === 'flex';
-                        document.querySelectorAll('.resolve-menu').forEach(m => m.style.display = 'none'); // Cierra otros
+                        document.querySelectorAll('.resolve-menu').forEach(m => m.style.display = 'none'); 
                         document.querySelectorAll('.complete-bar').forEach(b => b.style.display = 'flex');
                         hideBoxes();
                         if(!vis) { rMenu.style.display = 'flex'; cBar.style.display = 'none'; } 
                     };
 
-                    // 1. ACTUALIZAR (El nuevo Hito)
+                    // ACTUALIZAR LÓGICA INVERTIDA
                     const bUpd = div.querySelector('.box-update');
                     div.querySelector('.actualizar').onclick = () => { 
                         rMenu.style.display = 'none'; cBar.style.display = 'flex'; 
                         bUpd.style.display = 'flex'; div.querySelector('.input-upd-texto').focus();
                     };
                     div.querySelector('.btn-ok-update').onclick = async () => {
-                        const txt = div.querySelector('.input-upd-texto').value.trim();
-                        const fec = div.querySelector('.input-upd-fecha').value;
-                        if(!txt && !fec) return alert("Ingresa un texto o una nueva fecha.");
+                        const nuevoTexto = div.querySelector('.input-upd-texto').value.trim();
+                        const nuevaFec = div.querySelector('.input-upd-fecha').value;
+                        if(!nuevoTexto) return alert("Ingresa la nueva misión/texto para la tarea.");
                         
                         let nuevasUpds = [...hist];
-                        if(txt) nuevasUpds.push({ fecha: formatFechaAbsoluta(new Date().toISOString()), texto: txt });
+                        // El texto viejo pasa al historial
+                        nuevasUpds.push({ fecha: formatFechaAbsoluta(new Date().toISOString()), texto: item.texto });
                         
-                        let updateObj = { actualizaciones: nuevasUpds };
-                        if(fec) updateObj.fecha_programada = new Date(fec).toISOString();
+                        let updateObj = { texto: nuevoTexto, actualizaciones: nuevasUpds };
+                        if(nuevaFec) updateObj.fecha_programada = new Date(nuevaFec).toISOString();
 
                         await db.from('tareas').update(updateObj).eq('id', item.id);
-                        await db.from('usuarios').update({ ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual); // Cuenta como actividad
+                        await db.from('usuarios').update({ ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual);
                         renderTareas();
                     };
 
-                    // 2. FINALIZAR (Doble check)
+                    // FINALIZAR 
                     const btnFin = div.querySelector('.finalizar'); const msgConf = div.querySelector('.msg-confirm');
                     btnFin.onclick = async (e) => {
                         if (!btnFin.dataset.confirming) {
-                            btnFin.dataset.confirming = 'true'; msgConf.style.display = 'block'; 
-                            setTimeout(() => { if (document.body.contains(btnFin) && btnFin.dataset.confirming) { btnFin.dataset.confirming = ''; msgConf.style.display = 'none'; } }, 3000);
+                            btnFin.dataset.confirming = 'true'; msgConf.style.display = 'block'; btnFin.innerText = '¿SEGURO?';
+                            setTimeout(() => { if (document.body.contains(btnFin) && btnFin.dataset.confirming) { btnFin.dataset.confirming = ''; msgConf.style.display = 'none'; btnFin.innerText = '✅ Finalizar'; } }, 3000);
                         } else {
                             if(tareaEnfocadaId === item.id) { tareaEnfocadaId = null; document.getElementById('banner-enfoque').style.display = 'none'; }
                             await db.from('tareas').update({ completada: true, fecha_completada: new Date().toISOString() }).eq('id', item.id);
@@ -594,43 +584,36 @@
                     };
                 });
 
-                // Mostrar/Ocultar Cabeceras
-                document.getElementById('cat-vencidas').style.display = lVencidas.children.length ? 'block' : 'none';
-                document.getElementById('cat-hoy').style.display = lHoy.children.length ? 'block' : 'none';
-                document.getElementById('cat-sinfecha').style.display = lSinFecha.children.length ? 'block' : 'none';
-                document.getElementById('cat-futuro').style.display = lFuturo.children.length ? 'block' : 'none';
+                document.getElementById('cat-vencidas').style.display = lVencidas.children.length ? 'flex' : 'none';
+                document.getElementById('cat-hoy').style.display = lHoy.children.length ? 'flex' : 'none';
+                document.getElementById('cat-sinfecha').style.display = lSinFecha.children.length ? 'flex' : 'none';
+                document.getElementById('cat-futuro').style.display = lFuturo.children.length ? 'flex' : 'none';
             }
 
-            // CRONÓMETRO DE ALARMAS A FUTURO
             function cronometro() {
                 db.from('tareas').select('id, fecha_programada, texto').eq('completada', false).ilike('asignado_a', nombreActual).not('fecha_programada', 'is', null).then(({data}) => {
-                    if(!data) return;
-                    const ahora = new Date();
+                    if(!data) return; const ahora = new Date();
                     data.forEach(t => {
                         if (new Date(t.fecha_programada) <= ahora && !tareasAlertadas.has(t.id)) { 
                             emitirAlerta(); if (Notification.permission === "granted") new Notification("Alarma de Tarea", { body: t.texto }); 
-                            tareasAlertadas.add(t.id); renderTareas(); // Refresca para moverla a vencidas
+                            tareasAlertadas.add(t.id); renderTareas(); 
                         }
                     });
                 });
             }
             if(temporizadorAlarma) clearInterval(temporizadorAlarma); temporizadorAlarma = setInterval(cronometro, 15000); 
 
-            // QUITAR ENFOQUE
             document.getElementById('banner-enfoque').onclick = async () => { 
                 tareaEnfocadaId = null; document.getElementById('banner-enfoque').style.display = 'none'; 
-                await db.from('usuarios').update({ tarea_enfocada: null }).eq('nombre', nombreActual);
-                renderTareas(); 
+                await db.from('usuarios').update({ tarea_enfocada: null }).eq('nombre', nombreActual); renderTareas(); 
             };
             
-            // CREAR TAREA
             const createT = async () => { 
                 const tx = document.getElementById('nueva-tarea').value.trim(); if (!tx) return; 
                 const fp = document.getElementById('fecha-tarea').value;
                 await db.from('tareas').insert([{ asignado_a: nombreActual, texto: tx, fecha_programada: fp ? new Date(fp).toISOString() : null, prioridad: parseInt(document.getElementById('prioridad-tarea').value) }]); 
                 document.getElementById('nueva-tarea').value = ''; document.getElementById('fecha-tarea').value = ''; 
-                await db.from('usuarios').update({ ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual);
-                renderTareas(); 
+                await db.from('usuarios').update({ ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual); renderTareas(); 
             };
             document.getElementById('btn-add-tarea').onclick = createT;
             document.getElementById('nueva-tarea').onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); createT(); } };
@@ -642,9 +625,9 @@
                 if (!n.length) return l.innerHTML = `<div style="font-size:12px; color:var(--secondary); padding: 10px;">Bandeja limpia.</div>`;
                 n.forEach(item => {
                     const div = document.createElement('div'); div.className = 'task-item';
-                    div.innerHTML = `<div class="task-content"><div class="task-text">${linkify(item.texto)}</div></div><button class="btn-txt-sm del-nota" style="align-self:center; color:var(--danger); border:none;">🚫</button>`; l.appendChild(div);
+                    div.innerHTML = `<div class="task-content"><div class="task-text">${linkify(item.texto)}</div></div><button class="btn-txt-sm del-nota" style="align-self:center; color:var(--danger); border:none; cursor:pointer;">🚫</button>`; l.appendChild(div);
                     const b = div.querySelector('.del-nota');
-                    b.onclick = async () => { if(!b.dataset.c) { b.dataset.c='1'; b.innerText='?'; setTimeout(()=>{if(b){b.dataset.c='';b.innerText='🚫';}},2000); } else { await db.from('notas').delete().eq('id', item.id); renderNotas(); }};
+                    b.onclick = async () => { if(!b.dataset.c) { b.dataset.c='1'; b.innerText='❓'; setTimeout(()=>{if(b){b.dataset.c='';b.innerText='🚫';}},2000); } else { await db.from('notas').delete().eq('id', item.id); renderNotas(); }};
                 });
             }
             const createN = async () => { const tx = document.getElementById('nueva-nota').value.trim(); if(tx) { await db.from('notas').insert([{ texto: tx }]); document.getElementById('nueva-nota').value = ''; renderNotas(); }};
@@ -674,7 +657,7 @@
             document.getElementById('btn-enviar-msg').onclick = createM;
             document.getElementById('nuevo-mensaje').onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); createM(); } };
 
-            // --- EQUIPO (KPIs AVANZADOS) ---
+            // --- EQUIPO ---
             document.getElementById('btn-limpiar-chat').onclick = async () => { if (confirm("⚠️ ¿Borrar chat global?")) { await db.from('mensajes').delete().neq('id', 0); renderChat(); } };
             
             async function cargarMetrics() {
@@ -688,7 +671,6 @@
                     const pendientes = misTareas.filter(t => !t.completada);
                     const compHoy = misTareas.filter(t => t.completada && new Date(t.fecha_completada) >= hoyInicio).length;
                     
-                    // Cálculo de "Hitos Hoy" (Buscando en el JSON de actualizaciones)
                     let hitosHoy = 0;
                     misTareas.forEach(t => { if(Array.isArray(t.actualizaciones)) { hitosHoy += t.actualizaciones.filter(a => { try { return new Date(a.fecha.split(' ')[0].split('/').reverse().join('-')) >= hoyInicio; } catch(e){return false;} }).length; }});
                     
@@ -697,7 +679,7 @@
                     const aFuturo = pendientes.filter(t => t.fecha_programada && new Date(t.fecha_programada) >= ahora).length;
                     
                     const ua = u.ultima_actividad ? formatFechaAbsoluta(u.ultima_actividad) : 'Sin registro';
-                    const enf = u.tarea_enfocada ? (tasks.find(x => x.id === u.tarea_enfocada)?.texto || 'Tarea oculta') : 'Ninguno';
+                    const enf = u.tarea_enfocada ? (tasks.find(x => x.id === u.tarea_enfocada)?.texto || 'Oculto') : 'Ninguno';
 
                     const div = document.createElement('div'); div.className = 'equipo-card task-item';
                     div.innerHTML = `
@@ -705,11 +687,11 @@
                             <span class="equipo-name">${u.nombre} ${u.apellido || ''} ${u.es_admin ? '(A)' : ''}</span>
                             <button class="btn-txt-sm reset-pin">Reset PIN</button>
                         </div>
-                        <div class="equipo-metrics">
-                            <div>⏱️ Última act: <span>${ua}</span></div>
+                        <div style="font-size: 11px; color: var(--secondary); line-height: 1.6;">
+                            <div>⏱️ Última act: <span style="font-weight: bold; color: var(--primary);">${ua}</span></div>
                             <div style="color:var(--prio-2); font-weight:600;">🎯 Enfoque: <span style="font-weight:normal; color:var(--secondary);">${enf}</span></div>
-                            <div style="margin-top:6px;">📈 Gestiones hoy: <span>${compHoy + hitosHoy}</span> (${compHoy} cerradas + ${hitosHoy} hitos)</div>
-                            <div>📋 Pendientes: <span>${pendientes.length}</span> (🔴 ${p1} urgentes | ⏭️ ${aFuturo} a futuro)</div>
+                            <div style="margin-top:6px;">📈 Gestiones hoy: <span style="font-weight: bold; color: var(--primary);">${compHoy + hitosHoy}</span> (${compHoy} cerradas + ${hitosHoy} hitos)</div>
+                            <div>📋 Pendientes: <span style="font-weight: bold; color: var(--primary);">${pendientes.length}</span> (🔴 ${p1} urgentes | ⏭️ ${aFuturo} a futuro)</div>
                             ${vencidas > 0 ? `<div style="color:var(--danger); font-weight:bold; margin-top:4px;">⚠️ ${vencidas} Tareas vencidas</div>` : ''}
                         </div>`;
                     l.appendChild(div);
@@ -724,7 +706,6 @@
 
             renderTareas(); renderNotas(); renderChat(); renderHistorial();
         }
-
     </script>
 </body>
 </html>
