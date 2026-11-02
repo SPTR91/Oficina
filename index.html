@@ -6,14 +6,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* Diseño Minimalista y Sobrio */
-        :root {
-            --primary: #2c3e50;
-            --secondary: #7f8c8d;
-            --accent: #3498db;
-            --danger: #e74c3c;
-            --bg-light: #f9fbfc;
-            --border: #e1e8ed;
-        }
+        :root { --primary: #2c3e50; --secondary: #7f8c8d; --accent: #3498db; --danger: #e74c3c; --bg-light: #f9fbfc; --border: #e1e8ed; }
 
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 20px; background-color: #f0f4f8; margin: 0; color: #333; }
         
@@ -27,8 +20,7 @@
         
         #dashboard-app { 
             margin: 0; padding: 16px; display: flex; flex-direction: column; 
-            height: 600px; box-sizing: border-box; background: white; border: 1px solid var(--border); border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            height: 600px; box-sizing: border-box; background: white; border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
         .pip-mode #dashboard-app { border: none; border-radius: 0; height: 100vh; box-shadow: none; padding: 12px; }
         
@@ -46,11 +38,12 @@
         
         .tabs { display: flex; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 8px; flex-shrink: 0; overflow-x: auto; white-space: nowrap; scrollbar-width: none;}
         .tabs::-webkit-scrollbar { display: none; }
-        .tab-btn { background: none; border: none; cursor: pointer; color: var(--secondary); font-weight: 600; font-size: 11px; padding: 0 4px 4px 4px; position: relative; letter-spacing: 0.5px; }
+        .tab-btn { background: none; border: none; cursor: pointer; color: var(--secondary); font-weight: 600; font-size: 11px; padding: 0 4px 4px 4px; position: relative; letter-spacing: 0.5px; display: flex; align-items: center; gap: 4px;}
         .tab-btn.active { color: var(--primary); }
         .tab-btn.active::after { content: ''; position: absolute; bottom: -9px; left: 0; right: 0; height: 2px; background: var(--primary); }
         
-        .badge { display: none; position: absolute; top: -8px; right: -12px; background: var(--danger); color: white; border-radius: 3px; padding: 1px 4px; font-size: 9px; font-weight: bold; }
+        /* Nuevo indicador de punto rojo minimalista */
+        .dot-indicator { display: none; width: 6px; height: 6px; background-color: var(--danger); border-radius: 50%; }
         
         .contenido-tab { flex-grow: 1; overflow-y: auto; display: none; padding-right: 5px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
         .contenido-tab.active { display: block; }
@@ -70,15 +63,16 @@
         
         .prio-indicator { width: 4px; margin-right: 12px; border-radius: 2px; flex-shrink: 0; cursor: pointer; transition: width 0.2s; }
         .prio-indicator:hover { width: 8px; }
-        .prio-1 { background-color: var(--danger); } 
-        .prio-2 { background-color: #f39c12; } 
-        .prio-3 { background-color: #27ae60; } 
+        .prio-1 { background-color: var(--danger); } .prio-2 { background-color: #f39c12; } .prio-3 { background-color: #27ae60; } 
         
         .task-item input[type="checkbox"] { align-self: flex-start; margin-top: 4px; margin-right: 12px; width: 14px; height: 14px; cursor: pointer; accent-color: var(--primary); }
         .task-content { display: flex; flex-direction: column; flex-grow: 1; word-break: break-word; min-width: 0; }
         .task-text { font-size: 13px; margin-bottom: 4px; color: #2c3e50; line-height: 1.4; }
         .task-time { font-size: 11px; color: var(--secondary); font-family: monospace; }
         .task-time.vencida { color: var(--danger); font-weight: bold; }
+        
+        /* Mensaje de Doble Confirmación Restaurado */
+        .msg-confirm { color: #27ae60; font-weight: 600; font-size: 10px; display: none; margin-bottom: 4px; text-transform: uppercase;}
         
         .action-links { display: flex; gap: 10px; margin-top: 6px; }
         .action-link { background: none; border: none; padding: 0; font-size: 10px; font-weight: 600; color: var(--secondary); cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: color 0.2s;}
@@ -98,7 +92,6 @@
         .metric-block span { font-weight: 600; color: var(--primary); }
         .metric-alert { color: var(--danger); font-weight: bold; }
         
-        /* Auth forms */
         .auth-label { display: block; font-size: 11px; font-weight: 600; color: var(--secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;}
         .auth-input { width: 100%; margin-bottom: 16px; }
         .auth-link { color: var(--accent); text-decoration: none; font-size: 12px; font-weight: 500; }
@@ -113,40 +106,28 @@
         <div id="login-screen">
             <h2 style="margin: 0 0 5px 0; color: var(--primary); font-size: 18px;">Acceso</h2>
             <p style="font-size: 12px; color: var(--secondary); margin-bottom: 20px;">Sistema de gestión de tareas.</p>
-            
             <label class="auth-label">Usuario</label>
             <input type="text" id="login-usr" class="auth-input" placeholder="nombre">
-            
             <label class="auth-label">PIN</label>
             <input type="password" id="login-pin" class="auth-input" placeholder="****" maxlength="4">
-            
             <button id="btn-conectar" class="btn-main" style="width: 100%; margin-bottom: 15px;">Ingresar</button>
-            <div style="text-align: center;">
-                <a href="#" id="link-registro" class="auth-link">Crear cuenta nueva</a>
-            </div>
+            <div style="text-align: center;"><a href="#" id="link-registro" class="auth-link">Crear cuenta nueva</a></div>
         </div>
 
         <!-- REGISTRO -->
         <div id="register-screen" style="display: none;">
             <h2 style="margin: 0 0 5px 0; color: var(--primary); font-size: 18px;">Registro</h2>
             <p style="font-size: 12px; color: var(--secondary); margin-bottom: 20px;">Datos de usuario.</p>
-            
             <label class="auth-label">Nombre (Usuario)</label>
             <input type="text" id="reg-nombre" class="auth-input" placeholder="nombre">
-            
             <label class="auth-label">Apellido</label>
             <input type="text" id="reg-apellido" class="auth-input" placeholder="apellido">
-            
             <label class="auth-label">PIN (4 dígitos)</label>
             <input type="password" id="reg-pin" class="auth-input" placeholder="****" maxlength="4">
-            
             <label class="auth-label">Confirmar PIN</label>
             <input type="password" id="reg-repin" class="auth-input" placeholder="****" maxlength="4">
-            
             <button id="btn-registrar" class="btn-main" style="width: 100%; margin-bottom: 15px;">Registrar</button>
-            <div style="text-align: center;">
-                <a href="#" id="link-login" class="auth-link">Volver al acceso</a>
-            </div>
+            <div style="text-align: center;"><a href="#" id="link-login" class="auth-link">Volver al acceso</a></div>
         </div>
     </div>
 
@@ -164,10 +145,11 @@
             <input type="text" id="buscador" class="search-bar" placeholder="Buscar...">
             <div id="banner-enfoque" class="banner-enfoque">[ MODO ENFOQUE ] Clic aquí para salir.</div>
             
+            <!-- PESTAÑAS (Con el nuevo punto indicador rojo) -->
             <div class="tabs">
-                <button class="tab-btn active" id="btn-tab-tareas">TAREAS <span class="badge" id="badge-tareas">NEW</span></button>
+                <button class="tab-btn active" id="btn-tab-tareas">TAREAS <div class="dot-indicator" id="dot-tareas"></div></button>
                 <button class="tab-btn" id="btn-tab-notas">NOTAS</button>
-                <button class="tab-btn" id="btn-tab-chat">CHAT <span class="badge" id="badge-chat">1</span></button>
+                <button class="tab-btn" id="btn-tab-chat">CHAT <div class="dot-indicator" id="dot-chat"></div></button>
                 <button class="tab-btn" id="btn-tab-historial">HISTORIAL</button>
                 <button class="tab-btn" id="btn-tab-equipo" style="display: none;">EQUIPO</button>
             </div>
@@ -212,30 +194,25 @@
             
             <!-- EQUIPO (ADMIN) -->
             <div id="tab-equipo" class="contenido-tab">
-                <div style="font-size: 11px; color: var(--secondary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
-                    PANEL DE CONTROL SUPERVISOR
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 15px;">
+                    <span style="font-size: 11px; color: var(--secondary);">PANEL DE CONTROL SUPERVISOR</span>
+                    <button id="btn-limpiar-chat" class="btn-txt-sm" style="color: var(--danger); border-color: var(--danger);">Borrar Todo el Chat</button>
                 </div>
                 <div id="lista-equipo"></div>
             </div>
         </div>
 
-        <!-- PANEL ADMIN LOCAL -->
+        <!-- PANEL ADMIN LOCAL (Eliminado botón CSV) -->
         <div class="admin-panel" id="admin-panel">
             <h3 style="margin: 0 0 10px 0; font-size: 13px; color: var(--primary); text-transform: uppercase;">Gestión de Datos</h3>
-            <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+            <div style="display: flex; gap: 8px;">
                 <button id="btn-exportar" class="btn-txt-sm" style="flex-grow: 1; padding: 6px;">Exportar CSV</button>
-                <button id="btn-borrar" class="btn-txt-sm" style="flex-grow: 1; padding: 6px; color: var(--danger); border-color: var(--danger);">Limpiar Historial</button>
+                <button id="btn-borrar" class="btn-txt-sm" style="flex-grow: 1; padding: 6px; color: var(--danger); border-color: var(--danger);">Limpiar Historial Personal</button>
             </div>
-            <div style="font-size: 11px; font-weight: 600; color: var(--secondary); margin-bottom: 6px; text-transform: uppercase;">Importar CSV</div>
-            <input type="file" id="file-csv" accept=".csv" style="margin-bottom: 10px; font-size: 11px; width: 100%;">
-            <button id="btn-importar" class="btn-txt-sm" style="width: 100%; padding: 6px;">Cargar datos</button>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // 1. INICIALIZACIÓN
-        // ==========================================
         const supabaseUrl = 'https://msplydphthiditnoylcq.supabase.co'; 
         const supabaseKey = 'sb_publishable_YbzzNtr9z_QlM6fJJIy3ig_UlzpRO0J';
         const db = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -244,22 +221,20 @@
         let esAdminGlobal = false;
         let tareaEnfocadaId = null;
         let sonidoActivado = true;
-        
-        let noLeidosChat = 0; let ultimasTareasCargadas = 0;
+        let ultimasTareasCargadas = 0;
         let tareasAlertadas = new Set(); let temporizadorAlarma = null;
 
         const dApp = document.getElementById('dashboard-app');
         
-        // --- SONIDO MINIMALISTA ---
         function emitirAlerta() {
             if (!sonidoActivado) return;
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = ctx.createOscillator(); const gain = ctx.createGain();
                 osc.type = 'sine'; osc.frequency.setValueAtTime(600, ctx.currentTime);
-                gain.gain.setValueAtTime(0.05, ctx.currentTime); // Más bajo aún
+                gain.gain.setValueAtTime(0.05, ctx.currentTime); 
                 osc.connect(gain); gain.connect(ctx.destination);
-                osc.start(); osc.stop(ctx.currentTime + 0.15); // Más corto
+                osc.start(); osc.stop(ctx.currentTime + 0.15); 
             } catch(e) {}
         }
         
@@ -269,7 +244,6 @@
             e.target.classList.toggle('active-alert');
         });
 
-        // --- BUSCADOR ---
         document.getElementById('buscador').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
             dApp.querySelectorAll('.task-item, .mensaje, .equipo-card').forEach(el => {
@@ -279,9 +253,7 @@
         
         const linkify = (text) => text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank" style="color:var(--accent); text-decoration:none;">[Link]</a>`);
 
-        // ==========================================
-        // 2. AUTENTICACIÓN
-        // ==========================================
+        // LOGIN / REGISTRO
         document.getElementById('link-registro').onclick = (e) => { e.preventDefault(); document.getElementById('login-screen').style.display='none'; document.getElementById('register-screen').style.display='block'; };
         document.getElementById('link-login').onclick = (e) => { e.preventDefault(); document.getElementById('register-screen').style.display='none'; document.getElementById('login-screen').style.display='block'; };
 
@@ -289,7 +261,6 @@
             const nom = document.getElementById('reg-nombre').value.trim().toLowerCase();
             const ape = document.getElementById('reg-apellido').value.trim();
             const pin = document.getElementById('reg-pin').value.trim();
-            
             if (!nom || !pin) return alert("Nombre y PIN requeridos.");
             if (pin !== document.getElementById('reg-repin').value.trim()) return alert("PIN no coincide.");
             
@@ -299,60 +270,47 @@
 
             await db.from('usuarios').insert([{ nombre: nom, apellido: ape, pin: pin, es_admin: false }]);
             alert("Registro completo.");
-            document.getElementById('link-login').click();
-            document.getElementById('login-usr').value = nom;
-            btn.innerText = "Registrar";
+            document.getElementById('link-login').click(); document.getElementById('login-usr').value = nom; btn.innerText = "Registrar";
         };
 
         document.getElementById('btn-conectar').onclick = async () => {
             let usr = document.getElementById('login-usr').value.trim().toLowerCase();
             const pin = document.getElementById('login-pin').value.trim();
-            
             if (!usr) return alert("Ingresa usuario.");
+            
             const btn = document.getElementById('btn-conectar'); btn.innerText = "...";
-
             if (usr === "admin" && pin === "admin") {
                 usr = prompt("Acceso Maestro. Ingresa usuario destino:")?.toLowerCase();
                 if(!usr) { btn.innerText = "Ingresar"; return; }
             } else {
-                let { data: u, error } = await db.from('usuarios').select('*').eq('nombre', usr).single();
+                let { data: u } = await db.from('usuarios').select('*').eq('nombre', usr).single();
                 if (!u) { btn.innerText = "Ingresar"; return alert("Usuario no encontrado."); }
-                
                 if (u.pin === null) {
-                    // Flujo de Reset de PIN
-                    const nuevoPin = prompt("Tu PIN fue reiniciado por el Administrador.\nCrea un nuevo PIN (4 dígitos):");
+                    const nuevoPin = prompt("Tu PIN fue reiniciado.\nCrea un nuevo PIN (4 dígitos):");
                     if(!nuevoPin || nuevoPin.length < 4) { btn.innerText = "Ingresar"; return alert("PIN inválido."); }
                     await db.from('usuarios').update({ pin: nuevoPin }).eq('nombre', usr);
-                    alert("PIN actualizado. Vuelve a ingresar.");
-                    btn.innerText = "Ingresar"; return;
+                    alert("PIN actualizado. Vuelve a ingresar."); btn.innerText = "Ingresar"; return;
                 }
-                
                 if (u.pin !== pin) { btn.innerText = "Ingresar"; return alert("PIN incorrecto."); }
                 esAdminGlobal = u.es_admin;
             }
 
             nombreActual = usr;
-            document.getElementById('auth-container').style.display = 'none';
-            document.getElementById('app-container').style.display = 'block';
+            document.getElementById('auth-container').style.display = 'none'; document.getElementById('app-container').style.display = 'block';
             document.getElementById('saludo-usuario').innerText = nombreActual;
             
             if (esAdminGlobal) document.getElementById('btn-tab-equipo').style.display = 'inline-block';
             if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
-            
             iniciarApp();
         };
 
-        // ==========================================
-        // 3. NÚCLEO DE LA APLICACIÓN
-        // ==========================================
         document.getElementById('btn-pip').onclick = async () => {
             if (!('documentPictureInPicture' in window)) return;
             const btnPip = document.getElementById('btn-pip');
             const pip = await documentPictureInPicture.requestWindow({ width: 380, height: 550 });
             pip.document.body.classList.add('pip-mode');
             document.querySelectorAll('style').forEach(s => pip.document.head.appendChild(s.cloneNode(true)));
-            pip.document.body.appendChild(dApp);
-            btnPip.style.display = 'none';
+            pip.document.body.appendChild(dApp); btnPip.style.display = 'none';
             pip.addEventListener('pagehide', () => { document.getElementById('app-container').insertBefore(dApp, document.getElementById('admin-panel')); btnPip.style.display = 'block'; });
         };
 
@@ -367,49 +325,37 @@
                     dApp.querySelectorAll('.tab-btn, .contenido-tab').forEach(el => el.classList.remove('active'));
                     b.classList.add('active'); dApp.querySelector(`#tab-${p}`).classList.add('active');
                     
-                    if(p === 'chat') { dApp.querySelector('#badge-chat').style.display = 'none'; noLeidosChat = 0; }
-                    if(p === 'tareas') dApp.querySelector('#badge-tareas').style.display = 'none';
+                    if(p === 'chat') dApp.querySelector('#dot-chat').style.display = 'none';
+                    if(p === 'tareas') dApp.querySelector('#dot-tareas').style.display = 'none';
                     if(p === 'equipo' && esAdminGlobal) cargarMetrics();
                 };
             });
 
-            // --- TAREAS ---
+            // TAREAS CON DOBLE CONFIRMACIÓN RESTAURADA
             async function renderTareas(rt = false) {
                 let { data: t } = await db.from('tareas').select('*').eq('completada', false).ilike('asignado_a', nombreActual).order('prioridad', { ascending: true }).order('created_at', { ascending: true });
                 const l = dApp.querySelector('#lista-tareas'); l.innerHTML = '';
                 
-                if (rt && t.length > ultimasTareasCargadas) { emitirAlerta(); if(currentTab !== 'tareas') dApp.querySelector('#badge-tareas').style.display = 'block'; }
+                if (rt && t.length > ultimasTareasCargadas) { emitirAlerta(); if(currentTab !== 'tareas') dApp.querySelector('#dot-tareas').style.display = 'block'; }
                 ultimasTareasCargadas = t.length;
 
                 const tF = tareaEnfocadaId ? t.filter(x => x.id === tareaEnfocadaId) : t;
                 if (!tF.length) return l.innerHTML = `<div style="font-size:12px; color:var(--secondary); text-align:center; padding: 20px 0;">Lista vacía.</div>`;
 
-                // Comprobar vencimientos
                 const ahora = new Date(); const hhmm = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
 
                 tF.forEach(item => {
                     const esVencida = item.hora_vencimiento && item.hora_vencimiento < hhmm;
-                    const timeClass = esVencida ? 'task-time vencida' : 'task-time';
-                    const timeText = item.hora_vencimiento ? (esVencida ? `[VENCIDA ${item.hora_vencimiento}]` : `[Hora: ${item.hora_vencimiento}]`) : '';
-
                     const div = document.createElement('div'); div.className = 'task-item';
                     div.innerHTML = `
                         <div class="prio-indicator prio-${item.prioridad}" title="Ciclar prioridad"></div>
                         <input type="checkbox" class="chk-done">
                         <div class="task-content">
                             <div class="task-text">${linkify(item.texto)}</div>
-                            <div class="${timeClass}">${timeText}</div>
-                            
-                            <div class="action-links">
-                                <button class="action-link focus-btn">Enfoque</button>
-                                <button class="action-link trans-btn">Delegar</button>
-                            </div>
-                            
-                            <div class="transfer-box">
-                                <input type="text" class="transfer-input" placeholder="Usuario destino">
-                                <button class="btn-ok-trans">OK</button>
-                                <button class="btn-cancel-trans">X</button>
-                            </div>
+                            <div class="msg-confirm" style="display:none;">CONFIRMAR FINALIZACIÓN</div>
+                            <div class="${esVencida ? 'task-time vencida' : 'task-time'}">${item.hora_vencimiento ? (esVencida ? `[VENCIDA ${item.hora_vencimiento}]` : `[Hora: ${item.hora_vencimiento}]`) : ''}</div>
+                            <div class="action-links"><button class="action-link focus-btn">Enfoque</button><button class="action-link trans-btn">Delegar</button></div>
+                            <div class="transfer-box"><input type="text" class="transfer-input" placeholder="Usuario destino"><button class="btn-ok-trans">OK</button><button class="btn-cancel-trans">X</button></div>
                         </div>`;
                     l.appendChild(div);
                     
@@ -427,12 +373,25 @@
                     };
                     div.querySelector('.btn-ok-trans').onclick = execTrans; ti.onkeypress = (e) => { if(e.key === 'Enter') execTrans(); };
                     
-                    div.querySelector('.chk-done').onclick = async (e) => {
-                        e.preventDefault();
-                        if(tareaEnfocadaId === item.id) { tareaEnfocadaId = null; dApp.querySelector('#banner-enfoque').style.display = 'none'; }
-                        await db.from('tareas').update({ completada: true, fecha_completada: new Date().toISOString() }).eq('id', item.id);
-                        renderTareas(); renderHistorial();
-                    };
+                    // Lógica de Doble Check
+                    const chk = div.querySelector('.chk-done'); const confMsg = div.querySelector('.msg-confirm');
+                    chk.addEventListener('click', async (e) => {
+                        if (!chk.dataset.confirming) {
+                            e.preventDefault(); 
+                            chk.dataset.confirming = 'true';
+                            confMsg.style.display = 'block'; 
+                            setTimeout(() => {
+                                if (document.body.contains(chk) && chk.dataset.confirming) {
+                                    chk.dataset.confirming = ''; chk.checked = false; confMsg.style.display = 'none'; 
+                                }
+                            }, 3000);
+                        } else {
+                            e.preventDefault();
+                            if(tareaEnfocadaId === item.id) { tareaEnfocadaId = null; dApp.querySelector('#banner-enfoque').style.display = 'none'; }
+                            await db.from('tareas').update({ completada: true, fecha_completada: new Date().toISOString() }).eq('id', item.id);
+                            renderTareas(); renderHistorial();
+                        }
+                    });
                 });
             }
 
@@ -441,37 +400,27 @@
                     if(!data) return;
                     const d = new Date(); const hhmm = d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0');
                     data.forEach(t => {
-                        if (t.hora_vencimiento === hhmm && !tareasAlertadas.has(t.id)) {
-                            emitirAlerta(); if (Notification.permission === "granted") new Notification("Alarma", { body: t.texto });
-                            tareasAlertadas.add(t.id);
-                        }
+                        if (t.hora_vencimiento === hhmm && !tareasAlertadas.has(t.id)) { emitirAlerta(); if (Notification.permission === "granted") new Notification("Alarma", { body: t.texto }); tareasAlertadas.add(t.id); }
                     });
                 });
             }
             if(temporizadorAlarma) clearInterval(temporizadorAlarma); temporizadorAlarma = setInterval(cronometro, 15000); 
 
             dApp.querySelector('#banner-enfoque').onclick = () => { tareaEnfocadaId = null; dApp.querySelector('#banner-enfoque').style.display = 'none'; renderTareas(); };
-            dApp.querySelector('#btn-add-tarea').onclick = async () => { 
-                const tx = dApp.querySelector('#nueva-tarea').value.trim(); if (!tx) return; 
-                await db.from('tareas').insert([{ asignado_a: nombreActual, texto: tx, hora_vencimiento: dApp.querySelector('#hora-tarea').value || null, prioridad: parseInt(dApp.querySelector('#prioridad-tarea').value) }]); 
-                dApp.querySelector('#nueva-tarea').value = ''; dApp.querySelector('#hora-tarea').value = ''; renderTareas(); 
-            };
+            dApp.querySelector('#btn-add-tarea').onclick = async () => { const tx = dApp.querySelector('#nueva-tarea').value.trim(); if (!tx) return; await db.from('tareas').insert([{ asignado_a: nombreActual, texto: tx, hora_vencimiento: dApp.querySelector('#hora-tarea').value || null, prioridad: parseInt(dApp.querySelector('#prioridad-tarea').value) }]); dApp.querySelector('#nueva-tarea').value = ''; dApp.querySelector('#hora-tarea').value = ''; renderTareas(); };
 
-            // --- NOTAS ---
             async function renderNotas() {
                 let { data: n } = await db.from('notas').select('*').order('created_at', { ascending: false });
                 const l = dApp.querySelector('#lista-notas'); l.innerHTML = '';
                 if (!n.length) return l.innerHTML = `<div style="font-size:12px; color:var(--secondary); text-align:center; padding: 20px 0;">No hay notas.</div>`;
                 n.forEach(item => {
                     const div = document.createElement('div'); div.className = 'task-item';
-                    div.innerHTML = `<div class="task-content"><div class="task-text">${linkify(item.texto)}</div></div><button class="action-link del-nota">Borrar</button>`;
-                    l.appendChild(div);
+                    div.innerHTML = `<div class="task-content"><div class="task-text">${linkify(item.texto)}</div></div><button class="action-link del-nota">Borrar</button>`; l.appendChild(div);
                     div.querySelector('.del-nota').onclick = async () => { await db.from('notas').delete().eq('id', item.id); renderNotas(); };
                 });
             }
             dApp.querySelector('#btn-add-nota').onclick = async () => { const tx = dApp.querySelector('#nueva-nota').value.trim(); if(tx) { await db.from('notas').insert([{ texto: tx }]); dApp.querySelector('#nueva-nota').value = ''; renderNotas(); }};
 
-            // --- HISTORIAL ---
             async function renderHistorial() {
                 let { data: t } = await db.from('tareas').select('texto, fecha_completada').eq('completada', true).ilike('asignado_a', nombreActual).order('fecha_completada', { ascending: false }).limit(50);
                 const l = dApp.querySelector('#lista-historial'); l.innerHTML = '';
@@ -481,44 +430,36 @@
                 });
             }
 
-            // --- CHAT ---
             async function renderChat(rt = false) {
                 let { data: m } = await db.from('mensajes').select('*').order('created_at', { ascending: false }).limit(50);
                 const l = dApp.querySelector('#lista-mensajes'); l.innerHTML = '';
-                
-                if (rt && currentTab !== 'chat' && m.length > 0 && m[0].usuario.toLowerCase() !== nombreActual) {
-                    emitirAlerta(); noLeidosChat++;
-                    const b = dApp.querySelector('#badge-chat'); b.innerText = noLeidosChat > 9 ? '9+' : noLeidosChat; b.style.display = 'block';
-                }
-                
+                if (rt && currentTab !== 'chat' && m.length > 0 && m[0].usuario.toLowerCase() !== nombreActual) { emitirAlerta(); dApp.querySelector('#dot-chat').style.display = 'block'; }
                 m.reverse().forEach(item => { l.innerHTML += `<div class="mensaje"><div class="msg-usuario">${item.usuario}</div><div class="msg-texto">${linkify(item.texto)}</div></div>`; });
                 l.scrollTop = l.scrollHeight;
             }
             dApp.querySelector('#btn-enviar-msg').onclick = async () => { const tx = dApp.querySelector('#nuevo-mensaje').value.trim(); if(tx) { await db.from('mensajes').insert([{ usuario: nombreActual, texto: tx }]); dApp.querySelector('#nuevo-mensaje').value = ''; renderChat(); }};
 
-            // --- EQUIPO (KPIs) ---
+            // BOTÓN DE BORRAR CHAT (ADMIN)
+            document.getElementById('btn-limpiar-chat').onclick = async () => {
+                if (confirm("⚠️ ¿Estás seguro de borrar todos los mensajes del chat global de la base de datos?")) {
+                    await db.from('mensajes').delete().neq('id', 0); // Truco para borrar toda la tabla
+                    alert("Chat global limpiado."); renderChat();
+                }
+            };
+
             async function cargarMetrics() {
                 let { data: users } = await db.from('usuarios').select('nombre, apellido, es_admin').order('created_at', { ascending: true });
                 let { data: tasks } = await db.from('tareas').select('asignado_a, completada, prioridad, hora_vencimiento, fecha_completada');
-                
                 const l = dApp.querySelector('#lista-equipo'); l.innerHTML = '';
                 const ahora = new Date(); const hhmm = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
                 const hoyInicio = new Date(); hoyInicio.setHours(0,0,0,0);
-
                 users.forEach(u => {
-                    // Filtrar tareas del usuario
                     const misTareas = tasks.filter(t => t.asignado_a === u.nombre);
                     const pendientes = misTareas.filter(t => !t.completada);
                     const compHoy = misTareas.filter(t => t.completada && new Date(t.fecha_completada) >= hoyInicio).length;
-                    
-                    const p1 = pendientes.filter(t => t.prioridad === 1).length;
-                    const p2 = pendientes.filter(t => t.prioridad === 2).length;
-                    
+                    const p1 = pendientes.filter(t => t.prioridad === 1).length; const p2 = pendientes.filter(t => t.prioridad === 2).length;
                     const vencidas = pendientes.filter(t => t.hora_vencimiento && t.hora_vencimiento < hhmm).length;
-                    
-                    // Eficacia
-                    const totalHoy = pendientes.length + compHoy;
-                    const eficacia = totalHoy > 0 ? Math.round((compHoy / totalHoy) * 100) : 0;
+                    const eficacia = (pendientes.length + compHoy) > 0 ? Math.round((compHoy / (pendientes.length + compHoy)) * 100) : 0;
 
                     const div = document.createElement('div'); div.className = 'task-item equipo-card'; div.style.flexDirection = 'column';
                     div.innerHTML = `
@@ -527,19 +468,11 @@
                             <button class="btn-txt-sm reset-pin">Reset PIN</button>
                         </div>
                         <div class="metric-block">
-                            Eficacia hoy: <span>${eficacia}%</span> (${compHoy} comp.)<br>
-                            Pendientes: <span>${pendientes.length}</span> (Alta: ${p1} | Med: ${p2})<br>
+                            Eficacia hoy: <span>${eficacia}%</span> (${compHoy} comp.)<br>Pendientes: <span>${pendientes.length}</span> (Alta: ${p1} | Med: ${p2})<br>
                             ${vencidas > 0 ? `<span class="metric-alert">[ ${vencidas} Vencidas ]</span>` : ''}
-                        </div>
-                    `;
+                        </div>`;
                     l.appendChild(div);
-                    
-                    div.querySelector('.reset-pin').onclick = async () => {
-                        if(confirm(`¿Resetear PIN de ${u.nombre}?`)) {
-                            await db.from('usuarios').update({ pin: null }).eq('nombre', u.nombre);
-                            alert("PIN reseteado.");
-                        }
-                    };
+                    div.querySelector('.reset-pin').onclick = async () => { if(confirm(`¿Resetear PIN de ${u.nombre}?`)) { await db.from('usuarios').update({ pin: null }).eq('nombre', u.nombre); alert("PIN reseteado."); } };
                 });
             }
 
@@ -554,9 +487,6 @@
             renderTareas(); renderNotas(); renderChat(); renderHistorial();
         }
 
-        // ==========================================
-        // 4. ADMIN LOCAL (Exportar/Borrar)
-        // ==========================================
         document.getElementById('btn-exportar').onclick = async () => {
             let { data } = await db.from('tareas').select('*').ilike('asignado_a', nombreActual).order('created_at', { ascending: true });
             let csv = "\uFEFFEstado,Prioridad,Tarea,Hora Limite,Fecha Creacion,Fecha Finalizada\n";
@@ -565,19 +495,7 @@
         };
         document.getElementById('btn-borrar').onclick = async () => { 
             let { data: u } = await db.from('usuarios').select('pin').eq('nombre', nombreActual).single();
-            if (prompt("Tu PIN para confirmar:") === u.pin && confirm("¿Seguro?")) { await db.from('tareas').delete().eq('completada', true).ilike('asignado_a', nombreActual); alert("Limpio."); }
-        };
-        document.getElementById('btn-importar').onclick = () => {
-            const f = document.getElementById('file-csv'); if (!f.files.length) return;
-            const r = new FileReader();
-            r.onload = async (e) => {
-                let lines = e.target.result.replace(/^\uFEFF/, '').split('\n'); let ins = [];
-                for(let i=1; i<lines.length; i++) {
-                    const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim()); if (row.length < 5) continue;
-                    ins.push({ asignado_a: nombreActual, completada: row[0] === "Completada", prioridad: row[1].includes("Alta") ? 1 : (row[1].includes("Media") ? 2 : 3), texto: row[2], hora_vencimiento: row[3] === 'Sin hora' ? null : row[3] });
-                }
-                await db.from('tareas').insert(ins); alert("CSV cargado.");
-            }; r.readAsText(f.files[0], 'UTF-8');
+            if (prompt("Tu PIN para confirmar:") === u.pin && confirm("¿Seguro?")) { await db.from('tareas').delete().eq('completada', true).ilike('asignado_a', nombreActual); alert("Limpio."); renderHistorial(); }
         };
     </script>
 </body>
