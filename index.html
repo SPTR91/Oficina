@@ -11,32 +11,38 @@
         .admin-panel { margin-top: 20px; padding: 20px; background: #e9eef6; border-radius: 8px; max-width: 400px; border: 1px solid #cdd6e5; }
         
         /* Contenedores principales */
-        #login-screen { max-width: 400px; margin-bottom: 20px; }
+        #login-screen { max-width: 400px; margin-bottom: 20px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         #app-container { max-width: 400px; margin-bottom: 20px; }
         
-        /* ESTILOS DE LA APLICACIÓN (Se moverán a la ventana flotante) */
+        /* APP EN SÍ */
         #dashboard-app { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             margin: 0; padding: 12px; display: flex; flex-direction: column; 
-            height: 500px; /* Alto por defecto en la web */
-            box-sizing: border-box; background: #fff; border: 1px solid #ccc; border-radius: 8px;
+            height: 550px; box-sizing: border-box; background: #fff; border: 1px solid #ccc; border-radius: 8px;
         }
         .pip-mode #dashboard-app { border: none; border-radius: 0; height: 100vh; }
         
         #dashboard-app h3 { margin: 0 0 10px 0; font-size: 16px; flex-shrink: 0; color: #1a73e8; display: flex; justify-content: space-between; align-items: center;}
         
-        /* Buscador y Enfoque */
+        /* Botones superiores (Silencio y PiP) */
+        .top-controls { display: flex; gap: 5px; align-items: center; }
+        .btn-mute { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 4px; cursor: pointer; font-size: 14px; }
+        .btn-mute.muted { background: #ffe6e6; border-color: #d93025; }
+        
         .search-bar { width: 100%; padding: 6px 8px; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 10px; font-size: 13px; box-sizing: border-box; }
         .banner-enfoque { display: none; background: #fbbc04; padding: 6px; border-radius: 4px; font-weight: bold; text-align: center; margin-bottom: 10px; font-size: 11px; cursor: pointer; color: #333; }
         
-        .tabs { display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; flex-shrink: 0;}
-        .tab-btn { background: none; border: none; cursor: pointer; color: #666; font-weight: bold; font-size: 11px; padding: 5px; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; flex-shrink: 0; position: relative;}
+        .tab-btn { background: none; border: none; cursor: pointer; color: #666; font-weight: bold; font-size: 11px; padding: 5px; position: relative; }
         .tab-btn.active { color: #1a73e8; border-bottom: 2px solid #1a73e8; }
+        
+        /* Burbujas de Notificación */
+        .badge { display: none; position: absolute; top: -5px; right: -5px; background: #d93025; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; text-align: center; line-height: 16px; }
         
         .contenido-tab { flex-grow: 1; overflow-y: auto; display: none; padding-right: 5px;}
         .contenido-tab.active { display: block; }
         
-        input[type="text"], input[type="time"], select { padding: 6px; border-radius: 4px; border: 1px solid #ccc; font-size: 13px; box-sizing: border-box; }
+        input[type="text"], input[type="password"], input[type="time"], select { padding: 6px; border-radius: 4px; border: 1px solid #ccc; font-size: 13px; box-sizing: border-box; }
         .btn-accion { background: #1a73e8; color: white; border: none; cursor: pointer; border-radius: 4px; padding: 6px 12px; font-weight: bold; }
         
         .input-group { display: flex; gap: 4px; margin-bottom: 10px; align-items: center; }
@@ -44,7 +50,8 @@
         .time-input { width: 75px; }
         .prio-input { width: 45px; text-align: center; padding: 6px 0;}
         
-        .task-item { display: flex; align-items: stretch; padding: 8px 5px; border-bottom: 1px solid #f0f0f0; }
+        .task-item { display: flex; align-items: stretch; padding: 8px 5px; border-bottom: 1px solid #f0f0f0; transition: background 0.3s; }
+        .task-item.highlight { background: #fff8e1; } /* Brillo de nueva tarea */
         .prio-bar { width: 6px; cursor: pointer; margin-right: 8px; border-radius: 4px; flex-shrink: 0; transition: transform 0.1s; }
         .prio-bar:hover { filter: brightness(0.8); transform: scaleX(1.5); }
         .prio-1 { background-color: #d93025; } .prio-2 { background-color: #fbbc04; } .prio-3 { background-color: #34a853; } 
@@ -56,9 +63,7 @@
         .msg-confirm { color: #0f9d58; font-weight: bold; font-size: 12px; display: none; margin-bottom: 2px; }
         
         .btn-transfer { background: none; border: 1px solid #1a73e8; color: #1a73e8; cursor: pointer; font-size: 11px; padding: 2px 4px; border-radius: 4px; margin-left: 2px; height: fit-content; align-self: flex-start; margin-top: 2px; transition: 0.2s;}
-        .btn-transfer:hover { background: #e8f0fe; }
         .btn-focus { background: none; border: 1px solid #fbbc04; color: #d93025; cursor: pointer; font-size: 11px; padding: 2px 4px; border-radius: 4px; margin-left: 2px; height: fit-content; align-self: flex-start; margin-top: 2px; transition: 0.2s;}
-        .btn-focus:hover { background: #fff8e1; }
         
         .transfer-box { display: none; gap: 4px; margin-top: 6px; align-items: center; background: #f0f4f9; padding: 4px; border-radius: 4px; }
         .transfer-input { flex-grow: 1; padding: 4px 6px !important; font-size: 12px !important; border: 1px solid #1a73e8 !important; min-width: 0; }
@@ -68,50 +73,58 @@
         .mensaje { margin-bottom: 8px; padding: 8px; background: #f8f9fa; border-radius: 8px; font-size: 13px; border-left: 3px solid #1a73e8; }
         .msg-usuario { font-weight: bold; color: #1a73e8; margin-bottom: 2px; }
         .btn-delete-note { background: none; border: 1px solid #ccc; color: #d93025; cursor: pointer; font-size: 11px; padding: 4px 6px; border-radius: 4px; margin-left: 5px; height: fit-content; align-self: center; }
-        .btn-delete-note:hover { background: #ffe6e6; }
     </style>
 </head>
 <body>
 
-    <!-- PANTALLA DE LOGIN -->
+    <!-- PANTALLA DE LOGIN SEGURO EN LA NUBE -->
     <div id="login-screen">
-        <h2>Oficina Virtual Ágil</h2>
-        <p>Ingresa tu nombre para entrar a tu espacio de trabajo:</p>
-        <input type="text" id="nombre-usuario" placeholder="Ej. Manuel" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px; width: 100%;">
-        <br>
-        <button id="btn-conectar" class="btn-main" style="width: 100%;">Ingresar a la Oficina</button>
+        <h2>🔒 Acceso a la Oficina</h2>
+        <p style="font-size: 13px; color: #555;">Ingresa con tu usuario y PIN.</p>
+        
+        <label style="font-size: 13px; font-weight: bold;">Usuario:</label>
+        <input type="text" id="login-usr" placeholder="Ej. manuel" style="width: 100%; margin-bottom: 10px;">
+        
+        <label style="font-size: 13px; font-weight: bold;">PIN (4 dígitos):</label>
+        <input type="password" id="login-pin" placeholder="****" maxlength="4" style="width: 100%; margin-bottom: 15px;">
+        
+        <button id="btn-conectar" class="btn-main" style="width: 100%;">Ingresar</button>
+        <p style="font-size: 11px; color: #888; text-align: center; margin-top: 10px;">(Si el usuario no existe, se registrará con el PIN ingresado).</p>
     </div>
 
-    <!-- CONTENEDOR DE LA APP (Donde vive antes de ser Flotante) -->
+    <!-- CONTENEDOR DE LA APP -->
     <div id="app-container" style="display: none;">
-        <!-- APP EN SÍ (Este bloque es el que viajará a la ventana PiP) -->
         <div id="dashboard-app">
             <h3>
                 <span id="saludo-usuario">Oficina</span>
-                <button id="btn-pip" class="btn-main" style="padding: 4px 8px; font-size: 11px; margin-left: 10px;">↘️ Ventana Flotante</button>
+                <div class="top-controls">
+                    <button id="btn-mute" class="btn-mute" title="Activar/Silenciar alarmas">🔔</button>
+                    <button id="btn-pip" class="btn-main" style="padding: 4px 8px; font-size: 11px;">↘️ Flotante</button>
+                </div>
             </h3>
             
-            <!-- Buscador y Enfoque -->
             <input type="text" id="buscador" class="search-bar" placeholder="🔍 Buscar tareas, notas, mensajes...">
-            <div id="banner-enfoque" class="banner-enfoque" title="Clic para salir">📌 MODO ENFOQUE ACTIVO (Haz clic para salir)</div>
+            <div id="banner-enfoque" class="banner-enfoque">📌 MODO ENFOQUE ACTIVO (Clic para salir)</div>
             
             <div class="tabs">
-                <button class="tab-btn active" id="btn-tab-tareas">TAREAS</button>
+                <button class="tab-btn active" id="btn-tab-tareas">TAREAS <span class="badge" id="badge-tareas">!</span></button>
                 <button class="tab-btn" id="btn-tab-notas">NOTAS</button>
-                <button class="tab-btn" id="btn-tab-chat">CHAT</button>
+                <button class="tab-btn" id="btn-tab-chat">CHAT <span class="badge" id="badge-chat">1</span></button>
                 <button class="tab-btn" id="btn-tab-historial">HISTORIAL</button>
             </div>
 
+            <!-- TAREAS -->
             <div id="tab-tareas" class="contenido-tab active">
                 <div class="input-group">
                     <input type="text" id="nueva-tarea" class="task-input" placeholder="¿Qué hacer?">
                     <input type="time" id="hora-tarea" class="time-input">
-                    <select id="prioridad-tarea" class="prio-input" title="Prioridad"><option value="3" selected>🟢</option><option value="2">🟡</option><option value="1">🔴</option></select>
+                    <select id="prioridad-tarea" class="prio-input"><option value="3" selected>🟢</option><option value="2">🟡</option><option value="1">🔴</option></select>
                     <button class="btn-accion" id="btn-add-tarea">+</button>
                 </div>
                 <div id="lista-tareas" style="font-size: 13px; color: #666;">Cargando tus tareas...</div>
             </div>
 
+            <!-- NOTAS -->
             <div id="tab-notas" class="contenido-tab">
                 <div class="input-group">
                     <input type="text" id="nueva-nota" class="task-input" placeholder="Guardar enlace o nota...">
@@ -120,29 +133,29 @@
                 <div id="lista-notas" style="font-size: 13px; color: #666;">Cargando notas...</div>
             </div>
 
+            <!-- CHAT -->
             <div id="tab-chat" class="contenido-tab">
-                <div id="lista-mensajes" style="height: 320px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; color: #666;">Cargando chat del equipo...</div>
+                <div id="lista-mensajes" style="height: 320px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; color: #666;">Cargando chat...</div>
                 <div style="display: flex; gap: 5px;">
-                    <input type="text" id="nuevo-mensaje" placeholder="Mensaje para el equipo..." style="flex-grow: 1;">
+                    <input type="text" id="nuevo-mensaje" placeholder="Mensaje..." style="flex-grow: 1;">
                     <button class="btn-accion" id="btn-enviar-msg">Enviar</button>
                 </div>
             </div>
 
+            <!-- HISTORIAL -->
             <div id="tab-historial" class="contenido-tab">
                 <div id="lista-historial" style="font-size: 13px; color: #666;">Cargando tu historial...</div>
             </div>
         </div>
 
-        <!-- PANEL ADMIN (Se queda siempre en la ventana principal) -->
         <div class="admin-panel" id="admin-panel">
-            <h3 style="margin-top: 0; color: #1a73e8;">⚙️ Mi Administración Personal</h3>
-            <p style="font-size: 13px; color: #555;">Gestiona <b>únicamente tus tareas</b>.</p>
+            <h3 style="margin-top: 0; color: #1a73e8;">⚙️ Administración</h3>
+            <p style="font-size: 13px; color: #555;">Gestiona tus tareas y configuraciones.</p>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button id="btn-exportar" class="btn-main" style="background-color: #0f9d58; font-size: 12px; padding: 8px;">📊 Exportar Tareas</button>
+                <button id="btn-exportar" class="btn-main" style="background-color: #0f9d58; font-size: 12px; padding: 8px;">📊 Exportar CSV</button>
                 <button id="btn-borrar" class="btn-main" style="background-color: #d93025; font-size: 12px; padding: 8px;">🗑️ Limpiar Historial</button>
             </div>
-            <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 15px;">
-            <p style="font-size: 12px; font-weight: bold; color: #333; margin-bottom: 5px;">Importar tareas hacia mi cuenta:</p>
+            <p style="font-size: 12px; font-weight: bold; margin-bottom: 5px;">Importar tareas antiguas:</p>
             <input type="file" id="file-csv" accept=".csv" style="margin-bottom: 10px; font-size: 12px;">
             <br>
             <button id="btn-importar" class="btn-main" style="background-color: #555; font-size: 12px; padding: 6px 12px;">📥 Cargar a mi nube</button>
@@ -151,22 +164,45 @@
 
     <script>
         // ==========================================
-        // 1. CONEXIÓN A SUPABASE
+        // 1. CONEXIÓN Y VARIABLES GLOBALES
         // ==========================================
         const supabaseUrl = 'https://msplydphthiditnoylcq.supabase.co'; 
         const supabaseKey = 'sb_publishable_YbzzNtr9z_QlM6fJJIy3ig_UlzpRO0J';
         const db = window.supabase.createClient(supabaseUrl, supabaseKey);
         
         let nombreActual = "";
-        let tareaEnfocadaId = null; // Variable Global para Modo Enfoque
+        let tareaEnfocadaId = null;
+        let isMuted = false;
+        
+        // Contadores
+        let noLeidosChat = 0;
+        let ultimasTareasCargadas = 0;
+        let tareasAlertadas = new Set();
+        let temporizadorAlarma = null;
 
-        // ==========================================
-        // REFERENCIAS DEL DOM (Manejador de la App Mágica)
-        // ==========================================
         const dashboardApp = document.getElementById('dashboard-app');
         const buscadorInput = document.getElementById('buscador');
         
-        // --- FUNCIÓN DE BUSCADOR EN VIVO ---
+        // --- SONIDO ---
+        function emitirPitido() {
+            if (isMuted) return;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + 0.3);
+            } catch(e) {}
+        }
+        
+        document.getElementById('btn-mute').addEventListener('click', (e) => {
+            isMuted = !isMuted;
+            e.target.innerText = isMuted ? '🔕' : '🔔';
+            e.target.classList.toggle('muted');
+        });
+
+        // --- BUSCADOR ---
         function aplicarFiltro() {
             const term = buscadorInput.value.toLowerCase();
             dashboardApp.querySelectorAll('.task-item, .mensaje').forEach(el => {
@@ -175,275 +211,256 @@
             });
         }
         buscadorInput.addEventListener('input', aplicarFiltro);
-
         const linkify = (text) => text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank" style="color:#1a73e8; text-decoration:none;">${url}</a>`);
 
         // ==========================================
-        // 2. LÓGICA DE LOGIN Y ARRANQUE DUAL
+        // 2. SISTEMA DE LOGIN EN LA NUBE
         // ==========================================
-        document.getElementById('btn-conectar').addEventListener('click', () => {
-            const inputNombre = document.getElementById('nombre-usuario').value.trim();
-            if (!inputNombre) return alert("Ingresa tu nombre.");
-            nombreActual = inputNombre;
+        document.getElementById('btn-conectar').addEventListener('click', async () => {
+            let usrInput = document.getElementById('login-usr').value.trim().toLowerCase();
+            const pinInput = document.getElementById('login-pin').value.trim();
+            
+            if (!usrInput || !pinInput) return alert("Completa ambos campos.");
+            
+            document.getElementById('btn-conectar').innerText = "Verificando...";
 
+            // Admin Maestro Bypass
+            if (usrInput === "admin" && pinInput === "admin123") {
+                usrInput = prompt("Admin: ¿A nombre de qué usuario quieres entrar?");
+                if(!usrInput) { document.getElementById('btn-conectar').innerText = "Ingresar"; return; }
+                usrInput = usrInput.toLowerCase();
+            } else {
+                // Verificar en la Nube
+                let { data: usuario, error } = await db.from('usuarios').select('*').eq('nombre', usrInput).single();
+                
+                if (usuario) {
+                    if (usuario.pin !== pinInput) {
+                        document.getElementById('btn-conectar').innerText = "Ingresar";
+                        return alert("❌ PIN incorrecto.");
+                    }
+                } else {
+                    // No existe, registrarlo en la nube
+                    let { error: errInsert } = await db.from('usuarios').insert([{ nombre: usrInput, pin: pinInput }]);
+                    if (errInsert) {
+                        document.getElementById('btn-conectar').innerText = "Ingresar";
+                        return alert("Error al registrar: " + errInsert.message);
+                    }
+                    alert(`✅ Nuevo usuario '${usrInput}' registrado.`);
+                }
+            }
+
+            nombreActual = usrInput;
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-container').style.display = 'block';
-            document.getElementById('saludo-usuario').innerText = `Oficina de ${nombreActual}`;
+            document.getElementById('saludo-usuario').innerText = `Oficina de ${nombreActual.charAt(0).toUpperCase() + nombreActual.slice(1)}`;
             
-            arrancarAplicacion(); // Carga todo en la web principal
+            // Permisos de Notificación nativa
+            if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+                Notification.requestPermission();
+            }
+            
+            arrancarAplicacion();
         });
 
         // ==========================================
-        // 3. MOVER A VENTANA FLOTANTE (PiP)
+        // 3. PIP Y APLICACIÓN
         // ==========================================
         document.getElementById('btn-pip').addEventListener('click', async () => {
             if (!('documentPictureInPicture' in window)) return alert("Tu navegador no soporta PiP.");
             const btnPip = document.getElementById('btn-pip');
-            
-            // Pedimos la ventana
             const pipWindow = await documentPictureInPicture.requestWindow({ width: 400, height: 550 });
-            pipWindow.document.body.classList.add('pip-mode'); // Estilo ajustado
-            
-            // Copiamos estilos a la nueva ventana
+            pipWindow.document.body.classList.add('pip-mode');
             document.querySelectorAll('style').forEach(s => pipWindow.document.head.appendChild(s.cloneNode(true)));
-            
-            // ¡MAGIA! Movemos la App físicamente a la ventana flotante
             pipWindow.document.body.appendChild(dashboardApp);
-            btnPip.style.display = 'none'; // Ocultamos el botón PiP
-            
-            // Al cerrar el PiP, la regresamos a la principal
+            btnPip.style.display = 'none';
             pipWindow.addEventListener('pagehide', () => {
                 document.getElementById('app-container').insertBefore(dashboardApp, document.getElementById('admin-panel'));
                 btnPip.style.display = 'block';
             });
         });
 
-        // ==========================================
-        // 4. FUNCIONES DEL TABLERO PRINCIPAL
-        // ==========================================
+        let vistaActual = 'tareas'; 
+
         function arrancarAplicacion() {
-            
-            // Sistema de Pestañas
+            // Limpieza y manejo de Pestañas
             const pestanas = ['tareas', 'notas', 'chat', 'historial'];
             pestanas.forEach(p => {
                 dashboardApp.querySelector(`#btn-tab-${p}`).addEventListener('click', () => {
-                    pestanas.forEach(px => { 
-                        dashboardApp.querySelector(`#btn-tab-${px}`).classList.remove('active'); 
-                        dashboardApp.querySelector(`#tab-${px}`).classList.remove('active'); 
-                    });
-                    dashboardApp.querySelector(`#btn-tab-${p}`).classList.add('active'); 
-                    dashboardApp.querySelector(`#tab-${p}`).classList.add('active');
-                    if (p === 'chat') { const m = dashboardApp.querySelector('#lista-mensajes'); m.scrollTop = m.scrollHeight; }
+                    vistaActual = p;
+                    pestanas.forEach(px => { dashboardApp.querySelector(`#btn-tab-${px}`).classList.remove('active'); dashboardApp.querySelector(`#tab-${px}`).classList.remove('active'); });
+                    dashboardApp.querySelector(`#btn-tab-${p}`).classList.add('active'); dashboardApp.querySelector(`#tab-${p}`).classList.add('active');
+                    
+                    if (p === 'chat') { 
+                        const m = dashboardApp.querySelector('#lista-mensajes'); m.scrollTop = m.scrollHeight; 
+                        noLeidosChat = 0; dashboardApp.querySelector('#badge-chat').style.display = 'none';
+                    }
+                    if (p === 'tareas') {
+                        dashboardApp.querySelector('#badge-tareas').style.display = 'none';
+                    }
                 });
             });
 
-            // TAREAS
-            async function cargarTareas() {
-                let { data: tareas, error } = await db.from('tareas').select('*').eq('completada', false).ilike('asignado_a', nombreActual).order('prioridad', { ascending: true }).order('created_at', { ascending: true });
-                const lista = dashboardApp.querySelector('#lista-tareas');
-                if (error) return lista.innerHTML = `<span style="color:red">Error: ${error.message}</span>`;
+            // --- TAREAS ---
+            async function cargarTareas(vieneDeTiempoReal = false) {
+                let { data: tareas } = await db.from('tareas').select('*').eq('completada', false).ilike('asignado_a', nombreActual).order('prioridad', { ascending: true }).order('created_at', { ascending: true });
+                const lista = dashboardApp.querySelector('#lista-tareas'); lista.innerHTML = '';
                 
-                lista.innerHTML = '';
-                
-                // Aplicar Filtro de Enfoque
-                const tareasMostrar = tareaEnfocadaId ? tareas.filter(t => t.id === tareaEnfocadaId) : tareas;
-                
-                if (tareasMostrar.length === 0) {
-                    lista.innerHTML = `<div style="text-align:center; margin-top:20px;">No hay tareas pendientes.</div>`;
-                    aplicarFiltro(); return;
+                // Alertar si llegó una nueva tarea de otro lado
+                if (vieneDeTiempoReal && tareas.length > ultimasTareasCargadas) {
+                    emitirPitido();
+                    if(vistaActual !== 'tareas') dashboardApp.querySelector('#badge-tareas').style.display = 'block';
                 }
+                ultimasTareasCargadas = tareas.length;
+
+                const tareasMostrar = tareaEnfocadaId ? tareas.filter(t => t.id === tareaEnfocadaId) : tareas;
+                if (tareasMostrar.length === 0) return lista.innerHTML = `<div style="text-align:center; margin-top:20px;">No hay tareas pendientes.</div>`;
 
                 tareasMostrar.forEach(t => {
-                    const div = document.createElement('div');
-                    div.className = 'task-item';
+                    const div = document.createElement('div'); div.className = 'task-item';
+                    if (vieneDeTiempoReal && t.created_at > new Date(Date.now() - 5000).toISOString()) div.classList.add('highlight');
                     
                     div.innerHTML = `
-                        <div class="prio-bar prio-${t.prioridad}" title="Cambiar prioridad"></div>
-                        <input type="checkbox" class="chk-completar">
+                        <div class="prio-bar prio-${t.prioridad}"></div><input type="checkbox" class="chk-completar">
                         <div class="task-content">
                             <span class="task-text">${linkify(t.texto)}</span>
                             <span class="msg-confirm" style="display:none;">¿Confirmar? Clic de nuevo</span>
                             <span class="task-time">${t.hora_vencimiento ? '⏰ '+t.hora_vencimiento : 'Sin hora'}</span>
-                            
-                            <!-- Caja de transferencia oculta -->
-                            <div class="transfer-box" style="display:none;">
-                                <input type="text" class="transfer-input" placeholder="¿A quién?">
-                                <button class="btn-ok-trans">Enviar</button>
-                                <button class="btn-cancel-trans" title="Cancelar">✖</button>
-                            </div>
+                            <div class="transfer-box"><input type="text" class="transfer-input" placeholder="¿A quién?"><button class="btn-ok-trans">Enviar</button><button class="btn-cancel-trans">✖</button></div>
                         </div>
-                        <button class="btn-focus" title="Modo Enfoque">📌</button>
-                        <button class="btn-transfer" title="Delegar a otra persona">➡️</button>
-                    `;
+                        <button class="btn-focus">📌</button><button class="btn-transfer">➡️</button>`;
                     lista.appendChild(div);
                     
-                    // Eventos encapsulados en el DOM creado
+                    div.querySelector('.prio-bar').addEventListener('click', async () => { await db.from('tareas').update({ prioridad: t.prioridad === 3 ? 2 : (t.prioridad === 2 ? 1 : 3) }).eq('id', t.id); cargarTareas(); });
+                    div.querySelector('.btn-focus').addEventListener('click', () => { tareaEnfocadaId = t.id; dashboardApp.querySelector('#banner-enfoque').style.display = 'block'; cargarTareas(); });
                     
-                    // Prioridad
-                    div.querySelector('.prio-bar').addEventListener('click', async () => {
-                        await db.from('tareas').update({ prioridad: t.prioridad === 3 ? 2 : (t.prioridad === 2 ? 1 : 3) }).eq('id', t.id);
-                        cargarTareas(); 
-                    });
-
-                    // Modo Enfoque
-                    div.querySelector('.btn-focus').addEventListener('click', () => {
-                        tareaEnfocadaId = t.id;
-                        dashboardApp.querySelector('#banner-enfoque').style.display = 'block';
-                        cargarTareas();
-                    });
+                    const tBox = div.querySelector('.transfer-box'); const tInput = div.querySelector('.transfer-input');
+                    div.querySelector('.btn-transfer').addEventListener('click', () => { tBox.style.display = tBox.style.display === 'flex' ? 'none' : 'flex'; if(tBox.style.display === 'flex') tInput.focus(); });
+                    div.querySelector('.btn-cancel-trans').addEventListener('click', () => { tBox.style.display = 'none'; });
                     
-                    // Transferir
-                    const tBox = div.querySelector('.transfer-box');
-                    const tInput = div.querySelector('.transfer-input');
-                    
-                    div.querySelector('.btn-transfer').addEventListener('click', () => {
-                        tBox.style.display = tBox.style.display === 'flex' ? 'none' : 'flex';
-                        if (tBox.style.display === 'flex') tInput.focus();
-                    });
-                    div.querySelector('.btn-cancel-trans').addEventListener('click', () => { tBox.style.display = 'none'; tInput.value = ''; });
-                    
-                    const transferir = async () => {
-                        const destino = tInput.value.trim(); if (!destino) return;
+                    const transferir = async () => { 
+                        const dest = tInput.value.trim().toLowerCase(); if (!dest) return; 
+                        
+                        // Verificamos si existe el destino en la tabla usuarios para evitar transferir al vacío
+                        let { data: destUser } = await db.from('usuarios').select('nombre').eq('nombre', dest).single();
+                        if(!destUser) return alert(`El usuario '${dest}' no existe en el sistema.`);
+                        
                         div.querySelector('.btn-ok-trans').innerText = "...";
-                        await db.from('tareas').update({ asignado_a: destino }).eq('id', t.id);
-                        cargarTareas();
+                        await db.from('tareas').update({ asignado_a: dest }).eq('id', t.id); 
+                        cargarTareas(); 
                     };
-                    div.querySelector('.btn-ok-trans').addEventListener('click', transferir);
-                    tInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') transferir(); });
+                    div.querySelector('.btn-ok-trans').addEventListener('click', transferir); tInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') transferir(); });
                     
-                    // Completar
-                    const chk = div.querySelector('.chk-completar');
-                    const confMsg = div.querySelector('.msg-confirm');
+                    const chk = div.querySelector('.chk-completar'); const conf = div.querySelector('.msg-confirm');
                     chk.addEventListener('click', async (e) => {
-                        if (!chk.dataset.confirming) {
-                            e.preventDefault(); chk.dataset.confirming = 'true'; confMsg.style.display = 'block'; 
-                            setTimeout(() => { if (chk && chk.dataset.confirming) { chk.dataset.confirming = ''; chk.checked = false; confMsg.style.display = 'none'; } }, 3000);
-                        } else {
-                            e.preventDefault();
-                            if(tareaEnfocadaId === t.id) { tareaEnfocadaId = null; dashboardApp.querySelector('#banner-enfoque').style.display = 'none'; }
-                            await db.from('tareas').update({ completada: true, fecha_completada: new Date().toISOString() }).eq('id', t.id);
-                            cargarTareas(); cargarHistorial();
+                        if (!chk.dataset.confirming) { e.preventDefault(); chk.dataset.confirming = 'true'; conf.style.display = 'block'; setTimeout(() => { if (chk && chk.dataset.confirming) { chk.dataset.confirming = ''; chk.checked = false; conf.style.display = 'none'; } }, 3000); } 
+                        else { e.preventDefault(); if(tareaEnfocadaId === t.id) { tareaEnfocadaId = null; dashboardApp.querySelector('#banner-enfoque').style.display = 'none'; } await db.from('tareas').update({ completada: true, fecha_completada: new Date().toISOString() }).eq('id', t.id); cargarTareas(); cargarHistorial(); }
+                    });
+                });
+                aplicarFiltro();
+            }
+
+            // --- ALARMAS POR HORA ---
+            function revisarReloj() {
+                db.from('tareas').select('*').eq('completada', false).ilike('asignado_a', nombreActual).then(({data}) => {
+                    if(!data) return;
+                    const ahora = new Date();
+                    const horaFormato = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
+                    
+                    data.forEach(t => {
+                        if (t.hora_vencimiento === horaFormato && !tareasAlertadas.has(t.id)) {
+                            emitirPitido();
+                            if (Notification.permission === "granted") {
+                                new Notification("⏰ Hora de tu tarea:", { body: t.texto });
+                            }
+                            tareasAlertadas.add(t.id);
                         }
                     });
                 });
-                aplicarFiltro(); // Aplicar búsqueda a los nuevos elementos
             }
+            if(temporizadorAlarma) clearInterval(temporizadorAlarma);
+            temporizadorAlarma = setInterval(revisarReloj, 15000); // Revisa cada 15 segundos
 
-            // Quitar Modo Enfoque
-            dashboardApp.querySelector('#banner-enfoque').addEventListener('click', () => {
-                tareaEnfocadaId = null;
-                dashboardApp.querySelector('#banner-enfoque').style.display = 'none';
-                cargarTareas();
-            });
+            dashboardApp.querySelector('#banner-enfoque').addEventListener('click', () => { tareaEnfocadaId = null; dashboardApp.querySelector('#banner-enfoque').style.display = 'none'; cargarTareas(); });
+            
+            dashboardApp.querySelector('#btn-add-tarea').addEventListener('click', async () => { const txt = dashboardApp.querySelector('#nueva-tarea').value.trim(); if (!txt) return; await db.from('tareas').insert([{ asignado_a: nombreActual, texto: txt, hora_vencimiento: dashboardApp.querySelector('#hora-tarea').value || null, prioridad: parseInt(dashboardApp.querySelector('#prioridad-tarea').value)||3 }]); dashboardApp.querySelector('#nueva-tarea').value = ''; dashboardApp.querySelector('#hora-tarea').value = ''; cargarTareas(); });
 
-            dashboardApp.querySelector('#btn-add-tarea').addEventListener('click', async () => {
-                const txt = dashboardApp.querySelector('#nueva-tarea').value.trim(); if (!txt) return;
-                let { error } = await db.from('tareas').insert([{ asignado_a: nombreActual, texto: txt, hora_vencimiento: dashboardApp.querySelector('#hora-tarea').value || null, prioridad: parseInt(dashboardApp.querySelector('#prioridad-tarea').value)||3 }]);
-                if (!error) { dashboardApp.querySelector('#nueva-tarea').value = ''; dashboardApp.querySelector('#hora-tarea').value = ''; cargarTareas(); }
-            });
-
-            // NOTAS
+            // --- NOTAS ---
             async function cargarNotas() {
-                let { data: notas, error } = await db.from('notas').select('*').order('created_at', { ascending: false });
-                const lista = dashboardApp.querySelector('#lista-notas');
+                let { data: notas } = await db.from('notas').select('*').order('created_at', { ascending: false });
+                const lista = dashboardApp.querySelector('#lista-notas'); lista.innerHTML = '';
                 if (notas.length === 0) return lista.innerHTML = '<div style="text-align:center; margin-top:20px;">No hay notas del equipo.</div>';
-                lista.innerHTML = '';
+                
                 notas.forEach(n => {
-                    const div = document.createElement('div'); div.className = 'task-item';
-                    div.innerHTML = `<div class="task-content"><span class="task-text">📌 ${linkify(n.texto)}</span></div><button class="btn-delete-note" title="Doble clic">✖</button>`;
-                    lista.appendChild(div);
+                    const div = document.createElement('div'); div.className = 'task-item'; div.innerHTML = `<div class="task-content"><span class="task-text">📌 ${linkify(n.texto)}</span></div><button class="btn-delete-note">✖</button>`; lista.appendChild(div);
                     const btnDel = div.querySelector('.btn-delete-note');
                     btnDel.addEventListener('click', async () => {
-                        if (!btnDel.dataset.confirming) {
-                            btnDel.dataset.confirming = 'true'; btnDel.innerHTML = '¿Seguro?'; btnDel.style.fontWeight = 'bold';
-                            setTimeout(() => { if (btnDel && btnDel.dataset.confirming) { btnDel.dataset.confirming = ''; btnDel.innerHTML = '✖'; btnDel.style.fontWeight = 'normal'; } }, 3000);
-                        } else { await db.from('notas').delete().eq('id', n.id); cargarNotas(); }
+                        if (!btnDel.dataset.confirming) { btnDel.dataset.confirming = 'true'; btnDel.innerHTML = '¿Seguro?'; setTimeout(() => { if (btnDel) { btnDel.dataset.confirming = ''; btnDel.innerHTML = '✖'; } }, 3000); } 
+                        else { await db.from('notas').delete().eq('id', n.id); cargarNotas(); }
                     });
-                });
-                aplicarFiltro();
+                }); aplicarFiltro();
             }
+            dashboardApp.querySelector('#btn-add-nota').addEventListener('click', async () => { const txt = dashboardApp.querySelector('#nueva-nota').value.trim(); if (txt) { await db.from('notas').insert([{ texto: txt }]); dashboardApp.querySelector('#nueva-nota').value = ''; cargarNotas(); }});
 
-            dashboardApp.querySelector('#btn-add-nota').addEventListener('click', async () => {
-                const txt = dashboardApp.querySelector('#nueva-nota').value.trim(); if (!txt) return;
-                let { error } = await db.from('notas').insert([{ texto: txt }]);
-                if (!error) { dashboardApp.querySelector('#nueva-nota').value = ''; cargarNotas(); }
-            });
-
-            // HISTORIAL
+            // --- HISTORIAL ---
             async function cargarHistorial() {
                 let { data: tareas } = await db.from('tareas').select('*').eq('completada', true).ilike('asignado_a', nombreActual).order('fecha_completada', { ascending: false }).limit(50);
                 const lista = dashboardApp.querySelector('#lista-historial'); lista.innerHTML = '';
-                tareas.forEach(t => {
-                    const fecha = t.fecha_completada ? new Date(t.fecha_completada).toLocaleString() : 'N/A';
-                    lista.innerHTML += `<div class="task-item"><div class="prio-bar prio-${t.prioridad}" style="cursor:default"></div><div class="task-content"><span class="task-text" style="text-decoration:line-through;color:#999">✅ ${linkify(t.texto)}</span><span class="task-time">${fecha}</span></div></div>`;
-                });
-                aplicarFiltro();
+                tareas.forEach(t => { const f = t.fecha_completada ? new Date(t.fecha_completada).toLocaleString() : ''; lista.innerHTML += `<div class="task-item"><div class="prio-bar prio-${t.prioridad}"></div><div class="task-content"><span class="task-text" style="text-decoration:line-through;color:#999">✅ ${linkify(t.texto)}</span><span class="task-time">${f}</span></div></div>`; }); aplicarFiltro();
             }
 
-            // CHAT
-            async function cargarMensajes() {
+            // --- CHAT Y BURBUJA ---
+            async function cargarMensajes(vieneDeTiempoReal = false) {
                 let { data: mensajes } = await db.from('mensajes').select('*').order('created_at', { ascending: false }).limit(50);
                 const lista = dashboardApp.querySelector('#lista-mensajes'); lista.innerHTML = '';
-                mensajes.reverse().forEach(m => {
-                    lista.innerHTML += `<div class="mensaje"><div class="msg-usuario">${m.usuario}</div><div>${linkify(m.texto)}</div></div>`;
-                });
-                lista.scrollTop = lista.scrollHeight;
-                aplicarFiltro();
+                
+                if (vieneDeTiempoReal && vistaActual !== 'chat' && mensajes.length > 0) {
+                    if(mensajes[0].usuario.toLowerCase() !== nombreActual) {
+                        emitirPitido();
+                        noLeidosChat++;
+                        const badge = dashboardApp.querySelector('#badge-chat');
+                        badge.innerText = noLeidosChat > 9 ? '9+' : noLeidosChat;
+                        badge.style.display = 'block';
+                    }
+                }
+
+                mensajes.reverse().forEach(m => { lista.innerHTML += `<div class="mensaje"><div class="msg-usuario">${m.usuario.charAt(0).toUpperCase() + m.usuario.slice(1)}</div><div>${linkify(m.texto)}</div></div>`; });
+                lista.scrollTop = lista.scrollHeight; aplicarFiltro();
             }
+            dashboardApp.querySelector('#btn-enviar-msg').addEventListener('click', async () => { const txt = dashboardApp.querySelector('#nuevo-mensaje').value.trim(); if (txt) { await db.from('mensajes').insert([{ usuario: nombreActual, texto: txt }]); dashboardApp.querySelector('#nuevo-mensaje').value = ''; cargarMensajes(); }});
 
-            dashboardApp.querySelector('#btn-enviar-msg').addEventListener('click', async () => {
-                const txt = dashboardApp.querySelector('#nuevo-mensaje').value.trim(); if (!txt) return;
-                let { error } = await db.from('mensajes').insert([{ usuario: nombreActual, texto: txt }]);
-                if (!error) { dashboardApp.querySelector('#nuevo-mensaje').value = ''; cargarMensajes(); }
-            });
-
-            // Eventos Enter
             dashboardApp.querySelector('#nueva-tarea').addEventListener('keypress', (e) => { if (e.key === 'Enter') dashboardApp.querySelector('#btn-add-tarea').click(); });
             dashboardApp.querySelector('#nueva-nota').addEventListener('keypress', (e) => { if (e.key === 'Enter') dashboardApp.querySelector('#btn-add-nota').click(); });
             dashboardApp.querySelector('#nuevo-mensaje').addEventListener('keypress', (e) => { if (e.key === 'Enter') dashboardApp.querySelector('#btn-enviar-msg').click(); });
 
-            // Suscripción Realtime (Activa para ambas ventanas)
-            db.channel('public:tareas').on('postgres_changes', { event: '*', schema: 'public', table: 'tareas' }, payload => { cargarTareas(); cargarHistorial(); }).subscribe();
+            // Eventos Realtime
+            db.channel('public:tareas').on('postgres_changes', { event: '*', schema: 'public', table: 'tareas' }, payload => { cargarTareas(true); cargarHistorial(); }).subscribe();
             db.channel('public:notas').on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, payload => { cargarNotas(); }).subscribe();
-            db.channel('public:mensajes').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, payload => { cargarMensajes(); }).subscribe();
+            db.channel('public:mensajes').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, payload => { cargarMensajes(true); }).subscribe();
 
             cargarTareas(); cargarNotas(); cargarMensajes(); cargarHistorial();
         }
 
         // ==========================================
-        // 5. FUNCIONES ADMIN EXTRAS (Exportar/Borrar/Importar)
-        // Funciona igual, basado en nombreActual
+        // 4. FUNCIONES ADMIN
         // ==========================================
         document.getElementById('btn-exportar').addEventListener('click', async () => {
-            let { data, error } = await db.from('tareas').select('*').ilike('asignado_a', nombreActual).order('created_at', { ascending: true });
-            if(error || !data.length) return alert("No tienes tareas para exportar.");
+            let { data } = await db.from('tareas').select('*').ilike('asignado_a', nombreActual).order('created_at', { ascending: true });
             let csv = "\uFEFFEstado,Prioridad,Tarea,Hora Limite,Fecha Creacion,Fecha Finalizada\n";
-            data.forEach(t => {
-                csv += `"${t.completada?"Completada":"Pendiente"}","${t.prioridad===1?"Alta":t.prioridad===2?"Media":"Baja"}","${t.texto.replace(/"/g,'""')}","${t.hora_vencimiento||'Sin hora'}","${new Date(t.created_at).toLocaleString()}","${t.fecha_completada?new Date(t.fecha_completada).toLocaleString():'N/A'}"\n`;
-            });
-            let link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-            link.download = `Reporte_${nombreActual}.csv`; link.click();
+            data.forEach(t => { csv += `"${t.completada?"Completada":"Pendiente"}","${t.prioridad===1?"Alta":t.prioridad===2?"Media":"Baja"}","${t.texto.replace(/"/g,'""')}","${t.hora_vencimiento||'Sin hora'}","${new Date(t.created_at).toLocaleString()}","${t.fecha_completada?new Date(t.fecha_completada).toLocaleString():'N/A'}"\n`; });
+            let link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `Reporte_${nombreActual}.csv`; link.click();
         });
-
-        document.getElementById('btn-borrar').addEventListener('click', async () => {
-            if (prompt("⚠️ Ingresa PIN (admin123):") === "admin123" && confirm("¿Seguro?")) {
-                await db.from('tareas').delete().eq('completada', true).ilike('asignado_a', nombreActual); alert("✅ Limpio.");
-            }
-        });
-
+        document.getElementById('btn-borrar').addEventListener('click', async () => { if (prompt("PIN de administrador:") === "admin123" && confirm("¿Seguro?")) { await db.from('tareas').delete().eq('completada', true).ilike('asignado_a', nombreActual); alert("✅ Limpio."); }});
         document.getElementById('btn-importar').addEventListener('click', () => {
             const fileInput = document.getElementById('file-csv'); if (!fileInput.files.length) return alert("Selecciona .csv");
             const reader = new FileReader();
             reader.onload = async function(e) {
                 let lines = e.target.result.replace(/^\uFEFF/, '').split('\n'); let tareasAInsertar = [];
                 for(let i = 1; i < lines.length; i++) {
-                    const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim());
-                    if (row.length < 5) continue;
+                    const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim()); if (row.length < 5) continue;
                     tareasAInsertar.push({ asignado_a: nombreActual, completada: row[0] === "Completada", prioridad: row[1].includes("Alta") ? 1 : (row[1].includes("Media") ? 2 : 3), texto: row[2], hora_vencimiento: row[3] === 'Sin hora' ? null : row[3] });
                 }
                 await db.from('tareas').insert(tareasAInsertar); alert("✅ ¡Éxito!");
-            };
-            reader.readAsText(fileInput.files[0], 'UTF-8');
+            }; reader.readAsText(fileInput.files[0], 'UTF-8');
         });
     </script>
 </body>
