@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oficina Virtual v3.3</title>
+    <title>Oficina Virtual v3.4</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ==========================================
-           DISEÑO MINIMALISTA Y GRID (UI/UX)
-           ========================================== */
         :root {
             --primary: #2c3e50;
             --secondary: #7f8c8d;
@@ -30,51 +27,60 @@
         
         /* Layout Web: 2 Columnas */
         #app-container { display: none; max-width: 1200px; margin: 0 auto; }
-        .grid-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; align-items: stretch; min-height: 85vh; }
+        .grid-layout { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 20px; align-items: stretch; height: 88vh; }
         
-        /* Layout Flotante (PiP) */
-        .pip-mode body { padding: 8px; background: white; }
-        .pip-mode .grid-layout { grid-template-columns: 1fr; gap: 15px; display: flex; flex-direction: column; min-height: 100vh;}
-        .pip-mode .panel-tareas { flex: 1 1 auto; height: auto; min-height: 250px; border:none; box-shadow:none; padding:0;}
-        .pip-mode .panel-utilidades { flex: 0 0 250px; border:none; box-shadow:none; padding:0; border-top: 1px solid var(--border); padding-top: 10px;}
-        .pip-mode .hide-in-pip { display: none !important; }
+        /* Cuando la ventana flotante está abierta, la consola web muestra el panel de supervisión a pantalla completa */
+        .grid-layout.pip-active { grid-template-columns: 1fr; }
 
         /* Paneles */
-        .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; }
-        .panel-tareas { overflow-y: auto; max-height: 85vh; }
-        .panel-utilidades { max-height: 85vh; }
+        .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; height: 100%; overflow: hidden; }
         
-        .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; position: sticky; top: -16px; background: white; z-index: 10; padding-top: 16px;}
-        .header-title { font-size: 14px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;}
-        .version-badge { font-size: 10px; background: #eef2f5; color: var(--secondary); padding: 2px 6px; border-radius: 4px; }
+        .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 10px; flex-shrink: 0; }
+        .header-title { font-size: 14px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
         
-        .top-controls { display: flex; gap: 8px; }
-        .btn-txt-sm { background: none; border: 1px solid var(--border); color: var(--secondary); border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s; display: flex; align-items: center; gap: 4px;}
+        .top-controls { display: flex; gap: 8px; align-items: center; }
+        .version-badge { font-size: 10px; background: #eef2f5; color: var(--secondary); padding: 3px 6px; border-radius: 4px; font-weight: 600; letter-spacing: 0.5px; }
+        
+        .btn-txt-sm { background: none; border: 1px solid var(--border); color: var(--secondary); border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px;}
         .btn-txt-sm:hover { border-color: var(--primary); color: var(--primary); }
         .btn-txt-sm.active-alert { background: #fdf2f2; border-color: var(--danger); color: var(--danger); }
 
+        /* Barra de navegación exclusiva para Modo Flotante */
+        .pip-nav { display: none; gap: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        
+        /* Estilos Modo Flotante (PiP) */
+        body.pip-mode { padding: 0; margin: 0; background: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        body.pip-mode .panel { border: none; border-radius: 0; box-shadow: none; height: auto; padding: 12px; }
+        body.pip-mode #panel-tareas { flex: 1; overflow: hidden; }
+        body.pip-mode #panel-utilidades { flex: 1; overflow: hidden; display: none; }
+        body.pip-mode .pip-nav { display: flex; }
+        body.pip-mode .hide-in-pip { display: none !important; }
+        body.pip-mode #tabs-utilidades { display: none !important; }
+
         /* Pestañas */
-        .tabs { display: flex; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+        .tabs { display: flex; gap: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
         .tabs::-webkit-scrollbar { display: none; }
         .tab-btn { background: none; border: none; cursor: pointer; color: var(--secondary); font-weight: 600; font-size: 11px; padding: 8px 4px; position: relative; letter-spacing: 0.5px; display: flex; align-items: center; gap: 4px; flex-shrink: 0;}
         .tab-btn.active { color: var(--primary); }
         .tab-btn.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--primary); }
         .dot-indicator { display: none; width: 6px; height: 6px; background-color: var(--danger); border-radius: 50%; }
 
-        .contenido-tab { flex-grow: 1; overflow-y: auto; display: none; padding-right: 5px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; flex-direction: column;}
+        .contenido-tab { flex-grow: 1; overflow-y: auto; display: none; padding-right: 5px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; flex-direction: column; min-height: 0; }
         .contenido-tab.active { display: flex; }
 
+        #tareas-scroll-area { flex-grow: 1; overflow-y: auto; padding-right: 5px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; min-height: 0; }
+
         /* Formularios y Búsqueda */
-        .search-bar { width: 100%; padding: 8px 10px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 15px; font-size: 13px; background: #fdfdfd; outline: none; transition: border 0.2s; flex-shrink:0;}
+        .search-bar { width: 100%; padding: 8px 10px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 12px; font-size: 13px; background: #fdfdfd; outline: none; transition: border 0.2s; flex-shrink:0;}
         .search-bar:focus { border-color: var(--accent); }
         
-        .input-group { display: flex; gap: 6px; margin-bottom: 15px; align-items: flex-start; flex-shrink:0;}
-        textarea.task-input { flex-grow: 1; padding: 8px 10px; border-radius: 4px; border: 1px solid var(--border); font-size: 13px; outline: none; resize: vertical; min-height: 35px; max-height: 120px; font-family: inherit;}
+        .input-group { display: flex; gap: 6px; margin-bottom: 10px; align-items: flex-start; flex-shrink:0;}
+        textarea.task-input { flex-grow: 1; padding: 8px 10px; border-radius: 4px; border: 1px solid var(--border); font-size: 13px; outline: none; resize: vertical; min-height: 36px; max-height: 100px; font-family: inherit;}
         input[type="text"], input[type="datetime-local"], select { padding: 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 12px; outline: none; background: white;}
         .prio-input { width: 80px; color: var(--secondary); cursor: pointer; height: 35px;}
-        .datetime-input { width: 140px; height: 35px; color: var(--secondary);}
+        .datetime-input { width: 145px; height: 35px; color: var(--secondary);}
         
-        .btn-accion { background: var(--primary); color: white; border: none; cursor: pointer; border-radius: 4px; padding: 0 12px; font-weight: 500; font-size: 12px; height: 35px;}
+        .btn-accion { background: var(--primary); color: white; border: none; cursor: pointer; border-radius: 4px; padding: 0 12px; font-weight: 500; font-size: 12px; height: 35px; flex-shrink: 0;}
         
         /* TAREAS - Anatomía */
         .task-item { display: flex; align-items: stretch; border-bottom: 1px solid var(--border); transition: background 0.3s; padding-right: 4px; }
@@ -84,14 +90,14 @@
         .prio-1 { background-color: var(--prio-1); } .prio-2 { background-color: var(--prio-2); } .prio-3 { background-color: var(--prio-3); } 
         
         .task-content { display: flex; flex-direction: column; flex-grow: 1; min-width: 0; padding: 10px 0;}
-        .task-text { font-size: 13px; margin-bottom: 4px; line-height: 1.4; white-space: pre-wrap;}
+        .task-text { font-size: 13px; margin-bottom: 4px; line-height: 1.4; white-space: pre-wrap; word-break: break-word;}
         
         .task-meta { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--secondary); margin-bottom: 6px;}
         .task-time { font-family: monospace; background: #f0f4f8; padding: 2px 6px; border-radius: 3px;}
         .task-time.vencida { color: var(--danger); background: #fdf2f2; font-weight: bold; }
         
         /* Botones Acción Inferiores */
-        .action-links { display: flex; gap: 12px; }
+        .action-links { display: flex; gap: 12px; flex-wrap: wrap; }
         .action-link { background: none; border: none; padding: 0; font-size: 10px; font-weight: 600; color: var(--secondary); cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 3px;}
         .action-link:hover { color: var(--primary); }
         
@@ -105,7 +111,7 @@
         .complete-bar:hover { background: #e2e8f0; }
         .complete-bar::after { content: '›'; color: #cbd5e1; font-weight: bold; }
         
-        .resolve-menu { display: none; flex-direction: column; justify-content: center; gap: 4px; padding-left: 8px; border-left: 1px solid var(--border); margin-left: auto;}
+        .resolve-menu { display: none; flex-direction: column; justify-content: center; gap: 4px; padding-left: 8px; border-left: 1px solid var(--border); margin-left: auto; flex-shrink: 0;}
         .btn-resolve { background: white; border: 1px solid var(--border); color: var(--secondary); font-size: 10px; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 4px;}
         .btn-resolve.actualizar { color: #8e44ad; border-color: #d2b4de; }
         .btn-resolve.actualizar:hover { background: #f4ecf7; }
@@ -120,22 +126,20 @@
         .update-item span { font-weight: bold; color: var(--secondary); font-family: monospace;}
 
         /* Banner Enfoque */
-        .banner-enfoque { display: none; background: #fff8e1; border-left: 3px solid var(--prio-2); padding: 8px 10px; font-weight: 500; margin-bottom: 15px; font-size: 12px; cursor: pointer; color: #b9770e; align-items: center; justify-content: space-between;}
+        .banner-enfoque { display: none; background: #fff8e1; border-left: 3px solid var(--prio-2); padding: 8px 10px; font-weight: 500; margin-bottom: 12px; font-size: 12px; cursor: pointer; color: #b9770e; align-items: center; justify-content: space-between; flex-shrink: 0;}
         
         /* Chat y Equipo */
-        .mensaje { margin-bottom: 12px; font-size: 13px; line-height: 1.4; padding: 8px; background: #f8fafc; border-radius: 6px;}
+        .mensaje { margin-bottom: 10px; font-size: 13px; line-height: 1.4; padding: 8px; background: #f8fafc; border-radius: 6px;}
         .msg-usuario { font-size: 10px; font-weight: 600; color: var(--secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;}
-        .msg-texto { color: #333; white-space: pre-wrap; }
+        .msg-texto { color: #333; white-space: pre-wrap; word-break: break-word;}
 
         .equipo-card { flex-direction: column; padding: 12px 0; border-bottom: 1px solid var(--border);}
         .equipo-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .equipo-name { font-weight: 600; font-size: 13px; text-transform: uppercase; }
-        .equipo-metrics { font-size: 11px; color: var(--secondary); line-height: 1.6; }
-        .equipo-metrics span { font-weight: bold; color: var(--primary); }
 
         /* Categorías Visuales */
-        .cat-header { font-size: 10px; font-weight: bold; color: var(--secondary); text-transform: uppercase; letter-spacing: 1px; padding: 15px 0 4px 0; border-bottom: 1px solid var(--border); display: none; display: flex; align-items: center; gap: 6px;}
-        .task-item.futuro { opacity: 0.6; }
+        .cat-header { font-size: 10px; font-weight: bold; color: var(--secondary); text-transform: uppercase; letter-spacing: 1px; padding: 12px 0 4px 0; border-bottom: 1px solid var(--border); display: none; align-items: center; gap: 6px;}
+        .task-item.futuro { opacity: 0.65; }
 
         /* Autenticación */
         #auth-container { max-width: 320px; margin: 40px auto; background: white; padding: 30px; border-radius: 6px; border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
@@ -151,7 +155,6 @@
          PANTALLAS DE AUTENTICACIÓN
          ========================================== -->
     <div id="auth-container">
-        <!-- LOGIN -->
         <div id="login-screen">
             <h2 style="margin: 0 0 5px 0; color: var(--primary); font-size: 18px;">Oficina Virtual</h2>
             <p style="font-size: 12px; color: var(--secondary); margin-bottom: 20px;">Ingreso seguro.</p>
@@ -162,7 +165,6 @@
             <button id="btn-conectar" class="btn-main" style="width: 100%; margin-bottom: 15px;">Ingresar</button>
             <div style="text-align: center;"><a href="#" id="link-registro" class="auth-link">Crear cuenta</a></div>
         </div>
-        <!-- REGISTRO -->
         <div id="register-screen" style="display: none;">
             <h2 style="margin: 0 0 5px 0; color: var(--primary); font-size: 18px;">Registro</h2>
             <p style="font-size: 12px; color: var(--secondary); margin-bottom: 20px;">Datos de usuario.</p>
@@ -180,64 +182,74 @@
     </div>
 
     <!-- ==========================================
-         APLICACIÓN PRINCIPAL (GRID 2 COLUMNAS)
+         APLICACIÓN PRINCIPAL
          ========================================== -->
     <div id="app-container">
         <div class="grid-layout" id="main-grid">
             
-            <!-- PANEL IZQUIERDO: TAREAS (Siempre visible) -->
-            <div class="panel panel-tareas">
+            <!-- PANEL IZQUIERDO: TAREAS -->
+            <div class="panel panel-tareas" id="panel-tareas">
                 <div class="header-panel">
                     <div class="header-title">
-                        <span id="saludo-usuario" style="text-transform: uppercase;">Usuario</span>
-                        <span class="version-badge">v3.3</span>
+                        <span id="saludo-usuario">Usuario</span>
                     </div>
                     <div class="top-controls">
                         <button id="btn-mute" class="btn-txt-sm" title="Sonido">🔊</button>
                         <button id="btn-pip" class="btn-txt-sm" style="color: var(--prio-3); border-color: var(--prio-3);" title="Modo Flotante">⇲ Flotante</button>
+                        <span class="version-badge">v3.4</span>
                     </div>
                 </div>
 
-                <div id="banner-enfoque" class="banner-enfoque">
-                    <span>🎯 ENFOCADO</span> <span style="font-size:10px; color: var(--secondary);">(Clic para salir)</span>
+                <!-- Barra de navegación exclusiva para cuando está en ventana flotante -->
+                <div class="pip-nav" id="pip-nav">
+                    <button class="tab-btn active" id="pip-tab-tareas">TAREAS <div class="dot-indicator" id="dot-tareas-pip"></div></button>
+                    <button class="tab-btn" id="pip-tab-chat">CHAT <div class="dot-indicator" id="dot-chat-pip"></div></button>
+                    <button class="tab-btn" id="pip-tab-notas">NOTAS</button>
                 </div>
 
-                <div class="input-group" style="padding-bottom: 10px; border-bottom: 1px dashed var(--border);">
-                    <textarea id="nueva-tarea" class="task-input" placeholder="Nueva tarea... (Shift+Enter para salto de línea)"></textarea>
-                </div>
-                <div class="input-group" style="margin-top: -10px;">
-                    <input type="datetime-local" id="fecha-tarea" class="datetime-input" title="Fecha y Hora">
-                    <select id="prioridad-tarea" class="prio-input">
-                        <option value="3" selected>Baja</option>
-                        <option value="2">Media</option>
-                        <option value="1">Alta</option>
-                    </select>
-                    <button class="btn-accion" id="btn-add-tarea" style="flex-grow: 1;">Guardar Tarea</button>
-                </div>
+                <div id="tareas-view-wrapper" style="display:flex; flex-direction:column; flex-grow:1; min-height:0;">
+                    <div id="banner-enfoque" class="banner-enfoque">
+                        <span>🎯 ENFOCADO</span> <span style="font-size:10px; color: var(--secondary);">(Clic para salir)</span>
+                    </div>
 
-                <!-- Cabeceras de Categoría Temporales -->
-                <div id="cat-vencidas" class="cat-header" style="color: var(--danger);">⚠️ Vencidas</div>
-                <div id="lista-vencidas"></div>
-                
-                <div id="cat-hoy" class="cat-header">📅 Para Hoy</div>
-                <div id="lista-hoy"></div>
-                
-                <div id="cat-sinfecha" class="cat-header" style="color: var(--accent);">📥 Pendientes (Sin Fecha)</div>
-                <div id="lista-sinfecha"></div>
-                
-                <div id="cat-futuro" class="cat-header hide-in-pip">⏭️ A Futuro</div>
-                <div id="lista-futuro" class="hide-in-pip"></div>
+                    <div class="input-group">
+                        <textarea id="nueva-tarea" class="task-input" placeholder="Nueva tarea... (Shift+Enter para salto de línea)"></textarea>
+                    </div>
+                    <div class="input-group" style="padding-bottom: 10px; border-bottom: 1px dashed var(--border);">
+                        <input type="datetime-local" id="fecha-tarea" class="datetime-input" title="Fecha y Hora">
+                        <select id="prioridad-tarea" class="prio-input">
+                            <option value="3" selected>Baja</option>
+                            <option value="2">Media</option>
+                            <option value="1">Alta</option>
+                        </select>
+                        <button class="btn-accion" id="btn-add-tarea" style="flex-grow: 1;">Guardar Tarea</button>
+                    </div>
+
+                    <div id="tareas-scroll-area">
+                        <div id="cat-vencidas" class="cat-header" style="color: var(--danger);">⚠️ Vencidas</div>
+                        <div id="lista-vencidas"></div>
+                        
+                        <div id="cat-hoy" class="cat-header">📅 Para Hoy</div>
+                        <div id="lista-hoy"></div>
+                        
+                        <div id="cat-sinfecha" class="cat-header" style="color: var(--accent);">📥 Pendientes (Sin Fecha)</div>
+                        <div id="lista-sinfecha"></div>
+                        
+                        <div id="cat-futuro" class="cat-header">⏭️ A Futuro</div>
+                        <div id="lista-futuro"></div>
+                    </div>
+                </div>
             </div>
 
-            <!-- PANEL DERECHO: PESTAÑAS (Notas, Chat, Equipo, Historial) -->
-            <div class="panel panel-utilidades">
+            <!-- PANEL DERECHO: UTILIDADES Y SUPERVISIÓN -->
+            <div class="panel panel-utilidades" id="panel-utilidades">
                 <input type="text" id="buscador" class="search-bar" placeholder="Buscar en pestañas...">
                 
-                <div class="tabs">
+                <div class="tabs" id="tabs-utilidades">
                     <button class="tab-btn active" id="btn-tab-chat">CHAT <div class="dot-indicator" id="dot-chat"></div></button>
                     <button class="tab-btn" id="btn-tab-notas">NOTAS</button>
-                    <button class="tab-btn hide-in-pip" id="btn-tab-historial">HISTORIAL</button>
-                    <button class="tab-btn hide-in-pip" id="btn-tab-equipo" style="display: none; color: var(--danger);">EQUIPO</button>
+                    <button class="tab-btn" id="btn-tab-historial">HISTORIAL</button>
+                    <button class="tab-btn" id="btn-tab-equipo" style="display: none; color: var(--danger);">EQUIPO</button>
                 </div>
 
                 <!-- CHAT -->
@@ -252,24 +264,24 @@
                 <!-- NOTAS -->
                 <div id="tab-notas" class="contenido-tab">
                     <div class="input-group">
-                        <input type="text" id="nueva-nota" class="task-input" placeholder="Nota o enlace..." style="height:35px;">
+                        <input type="text" id="nueva-nota" class="task-input" placeholder="Nota o enlace..." style="height:35px; flex-grow:1;">
                         <button class="btn-accion" id="btn-add-nota">Add</button>
                     </div>
                     <div id="lista-notas" style="flex-grow: 1; overflow-y: auto;"></div>
                 </div>
 
-                <!-- HISTORIAL (Solo Web) -->
-                <div id="tab-historial" class="contenido-tab hide-in-pip">
-                    <div style="font-size: 11px; color: var(--secondary); margin-bottom: 10px; display: flex; justify-content: space-between;">
+                <!-- HISTORIAL (Se queda en Consola Web cuando abres Flotante) -->
+                <div id="tab-historial" class="contenido-tab">
+                    <div style="font-size: 11px; color: var(--secondary); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-shrink:0;">
                         <span>Registro de Tareas Completadas</span>
                         <button id="btn-limpiar-historial" class="btn-txt-sm" style="color:var(--danger); border-color:var(--danger);">Vaciar</button>
                     </div>
                     <div id="lista-historial" style="flex-grow: 1; overflow-y: auto;"></div>
                 </div>
                 
-                <!-- EQUIPO (Admin - Solo Web) -->
-                <div id="tab-equipo" class="contenido-tab hide-in-pip">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 15px;">
+                <!-- EQUIPO (Se queda en Consola Web cuando abres Flotante) -->
+                <div id="tab-equipo" class="contenido-tab">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 15px; flex-shrink:0;">
                         <span style="font-size: 11px; color: var(--secondary);">PANEL SUPERVISOR EN VIVO</span>
                         <button id="btn-limpiar-chat" class="btn-txt-sm" style="color: var(--danger); border-color: var(--danger);">Borrar Chat Global</button>
                     </div>
@@ -293,10 +305,19 @@
         let tareaEnfocadaId = null;
         let sonidoActivado = true;
         
-        let noLeidosChat = 0; let ultimasTareasCargadas = 0;
-        let tareasAlertadas = new Set(); let temporizadorAlarma = null;
+        let ultimasTareasCargadas = 0;
+        let tareasAlertadas = new Set(); 
+        let temporizadorAlarma = null;
+        let currentTab = 'chat';
 
+        // Referencias directas a los elementos (funcionan tanto en Web como dentro de la ventana PiP)
         const mainGrid = document.getElementById('main-grid');
+        const panelTareas = document.getElementById('panel-tareas');
+        const panelUtilidades = document.getElementById('panel-utilidades');
+        const tabChat = document.getElementById('tab-chat');
+        const tabNotas = document.getElementById('tab-notas');
+        const tabHistorial = document.getElementById('tab-historial');
+        const tabEquipo = document.getElementById('tab-equipo');
         
         // --- SONIDO ---
         function emitirAlerta() {
@@ -311,17 +332,19 @@
             } catch(e) {}
         }
         
-        document.getElementById('btn-mute').addEventListener('click', (e) => {
+        panelTareas.querySelector('#btn-mute').addEventListener('click', (e) => {
             sonidoActivado = !sonidoActivado;
-            e.target.innerText = sonidoActivado ? '🔊' : '🔇';
-            e.target.classList.toggle('active-alert');
+            e.currentTarget.innerText = sonidoActivado ? '🔊' : '🔇';
+            e.currentTarget.classList.toggle('active-alert');
         });
 
         // --- BUSCADOR ---
-        document.getElementById('buscador').addEventListener('input', (e) => {
+        panelUtilidades.querySelector('#buscador').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
-            document.querySelectorAll('.panel-utilidades .task-item, .panel-utilidades .mensaje, .panel-utilidades .equipo-card').forEach(el => {
-                el.style.display = el.innerText.toLowerCase().includes(term) ? '' : 'none';
+            [tabChat, tabNotas, tabHistorial, tabEquipo].forEach(container => {
+                container.querySelectorAll('.task-item, .mensaje, .equipo-card').forEach(el => {
+                    el.style.display = el.innerText.toLowerCase().includes(term) ? '' : 'none';
+                });
             });
         });
         
@@ -361,9 +384,14 @@
             if (!usr) return alert("Ingresa usuario.");
             
             const btn = document.getElementById('btn-conectar'); btn.innerText = "...";
+            let uData = null;
+
             if (usr === "admin" && pin === "admin") {
                 usr = prompt("Acceso Maestro. Ingresa usuario destino:")?.toLowerCase();
                 if(!usr) { btn.innerText = "Ingresar"; return; }
+                let { data: u } = await db.from('usuarios').select('*').eq('nombre', usr).single();
+                uData = u;
+                esAdminGlobal = true;
             } else {
                 let { data: u } = await db.from('usuarios').select('*').eq('nombre', usr).single();
                 if (!u) { btn.innerText = "Ingresar"; return alert("Usuario no encontrado."); }
@@ -374,14 +402,23 @@
                     alert("PIN actualizado. Vuelve a ingresar."); btn.innerText = "Ingresar"; return;
                 }
                 if (u.pin !== pin) { btn.innerText = "Ingresar"; return alert("PIN incorrecto."); }
+                uData = u;
                 esAdminGlobal = u.es_admin;
             }
 
             nombreActual = usr;
-            document.getElementById('auth-container').style.display = 'none'; document.getElementById('app-container').style.display = 'block';
-            document.getElementById('saludo-usuario').innerText = nombreActual;
+            tareaEnfocadaId = uData && uData.tarea_enfocada ? uData.tarea_enfocada : null;
+
+            document.getElementById('auth-container').style.display = 'none'; 
+            document.getElementById('app-container').style.display = 'block';
+            panelTareas.querySelector('#saludo-usuario').innerText = nombreActual;
             
-            if (esAdminGlobal) document.getElementById('btn-tab-equipo').style.display = 'flex';
+            if (tareaEnfocadaId) {
+                panelTareas.querySelector('#banner-enfoque').style.display = 'flex';
+            }
+            if (esAdminGlobal) {
+                panelUtilidades.querySelector('#btn-tab-equipo').style.display = 'flex';
+            }
             if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
             
             await db.from('usuarios').update({ ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual);
@@ -389,54 +426,125 @@
         };
 
         // ==========================================
-        // 3. PIP Y CONTROL DE VISTAS
+        // 3. MODO FLOTANTE (PiP) Y CONSOLA WEB
         // ==========================================
-        document.getElementById('btn-pip').onclick = async () => {
-            if (!('documentPictureInPicture' in window)) return;
-            const btnPip = document.getElementById('btn-pip');
+        const btnPip = panelTareas.querySelector('#btn-pip');
+        const tareasViewWrapper = panelTareas.querySelector('#tareas-view-wrapper');
+
+        // Navegación interna de la ventana flotante (TAREAS | CHAT | NOTAS)
+        function activarVistaPip(vista) {
+            ['tareas', 'chat', 'notas'].forEach(v => {
+                panelTareas.querySelector(`#pip-tab-${v}`).classList.toggle('active', v === vista);
+            });
+            if (vista === 'tareas') {
+                tareasViewWrapper.style.display = 'flex';
+                tabChat.classList.remove('active');
+                tabNotas.classList.remove('active');
+                panelTareas.querySelector('#dot-tareas-pip').style.display = 'none';
+            } else if (vista === 'chat') {
+                tareasViewWrapper.style.display = 'none';
+                tabNotas.classList.remove('active');
+                tabChat.classList.add('active');
+                panelTareas.querySelector('#dot-chat-pip').style.display = 'none';
+                panelUtilidades.querySelector('#dot-chat').style.display = 'none';
+                const m = tabChat.querySelector('#lista-mensajes'); m.scrollTop = m.scrollHeight;
+            } else if (vista === 'notas') {
+                tareasViewWrapper.style.display = 'none';
+                tabChat.classList.remove('active');
+                tabNotas.classList.add('active');
+            }
+        }
+
+        panelTareas.querySelector('#pip-tab-tareas').onclick = () => activarVistaPip('tareas');
+        panelTareas.querySelector('#pip-tab-chat').onclick = () => activarVistaPip('chat');
+        panelTareas.querySelector('#pip-tab-notas').onclick = () => activarVistaPip('notas');
+
+        btnPip.onclick = async () => {
+            if (!('documentPictureInPicture' in window)) return alert("Tu navegador no soporta ventana flotante.");
+            
             const pip = await documentPictureInPicture.requestWindow({ width: 420, height: 600 });
             pip.document.body.classList.add('pip-mode');
             document.querySelectorAll('style').forEach(s => pip.document.head.appendChild(s.cloneNode(true)));
             
-            pip.document.body.appendChild(mainGrid);
+            // Movemos Tareas, Chat y Notas a la ventana flotante
+            panelTareas.appendChild(tabChat);
+            panelTareas.appendChild(tabNotas);
+            pip.document.body.appendChild(panelTareas);
             btnPip.style.display = 'none';
             
+            // En la Consola Web quedan Historial y Equipo visibles y activos
+            mainGrid.classList.add('pip-active');
+            panelUtilidades.querySelector('#btn-tab-chat').style.display = 'none';
+            panelUtilidades.querySelector('#btn-tab-notas').style.display = 'none';
+            
+            // Seleccionamos automáticamente Equipo (si es admin) o Historial en la consola web
+            if (esAdminGlobal) {
+                panelUtilidades.querySelector('#btn-tab-equipo').click();
+            } else {
+                panelUtilidades.querySelector('#btn-tab-historial').click();
+            }
+
+            activarVistaPip('tareas');
+            
+            // Al cerrar la ventana flotante, todo regresa a las 2 columnas originales
             pip.addEventListener('pagehide', () => { 
-                document.getElementById('app-container').appendChild(mainGrid); 
-                btnPip.style.display = 'block'; 
+                tareasViewWrapper.style.display = 'flex';
+                panelUtilidades.insertBefore(tabChat, tabHistorial);
+                panelUtilidades.insertBefore(tabNotas, tabHistorial);
+                mainGrid.insertBefore(panelTareas, panelUtilidades);
+                
+                mainGrid.classList.remove('pip-active');
+                btnPip.style.display = 'inline-flex'; 
+                panelUtilidades.querySelector('#btn-tab-chat').style.display = 'flex';
+                panelUtilidades.querySelector('#btn-tab-notas').style.display = 'flex';
+                panelUtilidades.querySelector('#btn-tab-chat').click();
             });
         };
 
-        let currentTab = 'chat'; 
-
+        // ==========================================
+        // 4. LÓGICA PRINCIPAL DE LA APLICACIÓN
+        // ==========================================
         function iniciarApp() {
-            // Pestañas
+            // Pestañas de la Consola Web
             ['chat', 'notas', 'historial', 'equipo'].forEach(p => {
-                const b = document.getElementById(`btn-tab-${p}`);
+                const b = panelUtilidades.querySelector(`#btn-tab-${p}`);
                 if(b) b.onclick = () => {
                     currentTab = p;
-                    document.querySelectorAll('.panel-utilidades .tab-btn, .panel-utilidades .contenido-tab').forEach(el => el.classList.remove('active'));
-                    b.classList.add('active'); document.getElementById(`tab-${p}`).classList.add('active');
+                    panelUtilidades.querySelectorAll('.tab-btn, .contenido-tab').forEach(el => el.classList.remove('active'));
+                    b.classList.add('active'); 
+                    panelUtilidades.querySelector(`#tab-${p}`)?.classList.add('active');
                     
-                    if(p === 'chat') { document.getElementById('dot-chat').style.display = 'none'; noLeidosChat = 0; }
+                    if(p === 'chat') { panelUtilidades.querySelector('#dot-chat').style.display = 'none'; }
                     if(p === 'equipo' && esAdminGlobal) cargarMetrics();
                 };
             });
 
-            // --- RENDER TAREAS (LÓGICA INVERTIDA DE ACTUALIZACIÓN) ---
+            // --- RENDER TAREAS ---
             async function renderTareas(rt = false) {
                 let { data: t } = await db.from('tareas').select('*').eq('completada', false).ilike('asignado_a', nombreActual).order('prioridad', { ascending: true }).order('created_at', { ascending: true });
+                if (!t) return;
+
+                const lVencidas = panelTareas.querySelector('#lista-vencidas'); lVencidas.innerHTML = '';
+                const lHoy = panelTareas.querySelector('#lista-hoy'); lHoy.innerHTML = '';
+                const lSinFecha = panelTareas.querySelector('#lista-sinfecha'); lSinFecha.innerHTML = '';
+                const lFuturo = panelTareas.querySelector('#lista-futuro'); lFuturo.innerHTML = '';
                 
-                const lVencidas = document.getElementById('lista-vencidas'); lVencidas.innerHTML = '';
-                const lHoy = document.getElementById('lista-hoy'); lHoy.innerHTML = '';
-                const lSinFecha = document.getElementById('lista-sinfecha'); lSinFecha.innerHTML = '';
-                const lFuturo = document.getElementById('lista-futuro'); lFuturo.innerHTML = '';
-                
-                if (rt && t.length > ultimasTareasCargadas) emitirAlerta();
+                if (rt && t.length > ultimasTareasCargadas) {
+                    emitirAlerta();
+                    panelTareas.querySelector('#dot-tareas-pip').style.display = 'block';
+                }
                 ultimasTareasCargadas = t.length;
 
-                const tF = tareaEnfocadaId ? t.filter(x => x.id === tareaEnfocadaId) : t;
-                if (!tF.length && !tareaEnfocadaId) { lSinFecha.innerHTML = `<div style="font-size:12px; color:var(--secondary); padding: 10px;">Bandeja limpia.</div>`; }
+                // Si la tarea enfocada ya no existe o se completó, limpiamos el enfoque
+                if (tareaEnfocadaId && !t.some(x => String(x.id) === String(tareaEnfocadaId))) {
+                    tareaEnfocadaId = null;
+                    panelTareas.querySelector('#banner-enfoque').style.display = 'none';
+                }
+
+                const tF = tareaEnfocadaId ? t.filter(x => String(x.id) === String(tareaEnfocadaId)) : t;
+                if (!tF.length && !tareaEnfocadaId) { 
+                    lSinFecha.innerHTML = `<div style="font-size:12px; color:var(--secondary); padding: 10px;">Bandeja limpia.</div>`; 
+                }
 
                 const ahora = new Date();
                 const hoyInicio = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
@@ -456,8 +564,8 @@
                     const div = document.createElement('div'); div.className = `task-item ${claseFuturo}`;
                     
                     const hist = Array.isArray(item.actualizaciones) ? item.actualizaciones : [];
-                    const histHtml = hist.length > 0 ? hist.map(h => `<div class="update-item"><span>[${h.fecha}]</span> ${h.texto}</div>`).join('') : '';
-                    const infoBtn = hist.length > 0 ? `<button class="action-link info-btn" style="color:var(--accent);">[+ INFO]</button>` : '';
+                    const histHtml = hist.length > 0 ? hist.map(h => `<div class="update-item"><span>[${h.fecha}]</span> ${linkify(h.texto)}</div>`).join('') : '';
+                    const infoBtn = hist.length > 0 ? `<button class="action-link info-btn" style="color:var(--accent);">[+ INFO (${hist.length})]</button>` : '';
 
                     div.innerHTML = `
                         <div class="prio-indicator prio-${item.prioridad}" title="Ciclar prioridad"></div>
@@ -484,23 +592,21 @@
 
                             <div class="updates-list">${histHtml}</div>
                             
-                            <!-- Caja de Actualizar (Lógica Invertida) -->
+                            <!-- Caja de Actualizar Simplificada -->
                             <div class="action-box box-update">
-                                <span style="font-size:10px; font-weight:bold; color:var(--secondary);">INGRESAR NUEVA TAREA/MISIÓN Y REPROGRAMAR</span>
-                                <textarea class="action-input input-upd-texto" placeholder="Lo que escribas aquí reemplazará a la tarea principal. Lo anterior pasará al historial." style="resize:vertical; min-height:40px; border-color:var(--accent);"></textarea>
+                                <span style="font-size:10px; font-weight:bold; color:var(--secondary);">INGRESAR ACTUALIZACIÓN</span>
+                                <textarea class="action-input input-upd-texto" placeholder="Ingresar actualización..." style="resize:vertical; min-height:40px; border-color:var(--accent);"></textarea>
                                 <div style="display:flex; gap:6px;">
-                                    <input type="datetime-local" class="action-input input-upd-fecha" title="Nueva Fecha a Futuro">
-                                    <button class="btn-accion btn-ok-update" style="flex-grow:1;">Actualizar Ticket</button>
+                                    <input type="datetime-local" class="action-input input-upd-fecha" title="Nueva Fecha">
+                                    <button class="btn-accion btn-ok-update" style="flex-grow:1;">Actualizar</button>
                                 </div>
                             </div>
                             
                             <div class="msg-confirm">¿CONFIRMAR? CLIC DE NUEVO</div>
                         </div>
                         
-                        <!-- BARRA DERECHA -->
-                        <div class="complete-bar" title="Avanzar"></div>
+                        <div class="complete-bar" title="Opciones de avance"></div>
                         
-                        <!-- MENÚ DESLIZABLE DERECHO -->
                         <div class="resolve-menu">
                             <button class="btn-resolve actualizar">💬 Actualizar</button>
                             <button class="btn-resolve finalizar">✅ Finalizar</button>
@@ -508,11 +614,18 @@
                     `;
                     destino.appendChild(div);
                     
-                    div.querySelector('.prio-indicator').onclick = async () => { await db.from('tareas').update({ prioridad: item.prioridad === 3 ? 2 : (item.prioridad === 2 ? 1 : 3) }).eq('id', item.id); renderTareas(); };
+                    div.querySelector('.prio-indicator').onclick = async () => { 
+                        await db.from('tareas').update({ prioridad: item.prioridad === 3 ? 2 : (item.prioridad === 2 ? 1 : 3) }).eq('id', item.id); 
+                        renderTareas(); 
+                    };
                     
+                    // Activar Modo Enfoque y sincronizar con Equipo
                     div.querySelector('.focus-btn').onclick = async () => { 
-                        tareaEnfocadaId = item.id; document.getElementById('banner-enfoque').style.display = 'flex'; 
-                        await db.from('usuarios').update({ tarea_enfocada: item.id }).eq('nombre', nombreActual); renderTareas(); 
+                        tareaEnfocadaId = item.id; 
+                        panelTareas.querySelector('#banner-enfoque').style.display = 'flex'; 
+                        await db.from('usuarios').update({ tarea_enfocada: item.id, ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual); 
+                        renderTareas(); 
+                        if(esAdminGlobal) cargarMetrics();
                     };
                     
                     const btnInfo = div.querySelector('.info-btn');
@@ -540,13 +653,13 @@
                     const cBar = div.querySelector('.complete-bar'); const rMenu = div.querySelector('.resolve-menu');
                     cBar.onclick = () => { 
                         const vis = rMenu.style.display === 'flex';
-                        document.querySelectorAll('.resolve-menu').forEach(m => m.style.display = 'none'); 
-                        document.querySelectorAll('.complete-bar').forEach(b => b.style.display = 'flex');
+                        panelTareas.querySelectorAll('.resolve-menu').forEach(m => m.style.display = 'none'); 
+                        panelTareas.querySelectorAll('.complete-bar').forEach(b => b.style.display = 'flex');
                         hideBoxes();
                         if(!vis) { rMenu.style.display = 'flex'; cBar.style.display = 'none'; } 
                     };
 
-                    // ACTUALIZAR LÓGICA INVERTIDA
+                    // ACTUALIZAR TAREA (Guarda tarea anterior en +INFO y suma Hito con fecha exacta)
                     const bUpd = div.querySelector('.box-update');
                     div.querySelector('.actualizar').onclick = () => { 
                         rMenu.style.display = 'none'; cBar.style.display = 'flex'; 
@@ -555,41 +668,57 @@
                     div.querySelector('.btn-ok-update').onclick = async () => {
                         const nuevoTexto = div.querySelector('.input-upd-texto').value.trim();
                         const nuevaFec = div.querySelector('.input-upd-fecha').value;
-                        if(!nuevoTexto) return alert("Ingresa la nueva misión/texto para la tarea.");
+                        if(!nuevoTexto) return alert("Ingresa la actualización.");
                         
+                        const nowIso = new Date().toISOString();
                         let nuevasUpds = [...hist];
-                        // El texto viejo pasa al historial
-                        nuevasUpds.push({ fecha: formatFechaAbsoluta(new Date().toISOString()), texto: item.texto });
+                        nuevasUpds.push({ 
+                            fecha: formatFechaAbsoluta(nowIso), 
+                            ts: nowIso, 
+                            texto: item.texto 
+                        });
                         
                         let updateObj = { texto: nuevoTexto, actualizaciones: nuevasUpds };
                         if(nuevaFec) updateObj.fecha_programada = new Date(nuevaFec).toISOString();
 
                         await db.from('tareas').update(updateObj).eq('id', item.id);
-                        await db.from('usuarios').update({ ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual);
+                        await db.from('usuarios').update({ ultima_actividad: nowIso }).eq('nombre', nombreActual);
                         renderTareas();
+                        if(esAdminGlobal) cargarMetrics();
                     };
 
-                    // FINALIZAR 
+                    // FINALIZAR CON DOBLE CHECK (Funciona en Web y en Flotante)
                     const btnFin = div.querySelector('.finalizar'); const msgConf = div.querySelector('.msg-confirm');
-                    btnFin.onclick = async (e) => {
+                    btnFin.onclick = async () => {
                         if (!btnFin.dataset.confirming) {
                             btnFin.dataset.confirming = 'true'; msgConf.style.display = 'block'; btnFin.innerText = '¿SEGURO?';
-                            setTimeout(() => { if (document.body.contains(btnFin) && btnFin.dataset.confirming) { btnFin.dataset.confirming = ''; msgConf.style.display = 'none'; btnFin.innerText = '✅ Finalizar'; } }, 3000);
+                            setTimeout(() => { 
+                                if (btnFin && btnFin.dataset.confirming) { 
+                                    btnFin.dataset.confirming = ''; msgConf.style.display = 'none'; btnFin.innerText = '✅ Finalizar'; 
+                                } 
+                            }, 3000);
                         } else {
-                            if(tareaEnfocadaId === item.id) { tareaEnfocadaId = null; document.getElementById('banner-enfoque').style.display = 'none'; }
-                            await db.from('tareas').update({ completada: true, fecha_completada: new Date().toISOString() }).eq('id', item.id);
-                            await db.from('usuarios').update({ ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual);
+                            const nowIso = new Date().toISOString();
+                            if(String(tareaEnfocadaId) === String(item.id)) { 
+                                tareaEnfocadaId = null; 
+                                panelTareas.querySelector('#banner-enfoque').style.display = 'none'; 
+                                await db.from('usuarios').update({ tarea_enfocada: null }).eq('nombre', nombreActual);
+                            }
+                            await db.from('tareas').update({ completada: true, fecha_completada: nowIso }).eq('id', item.id);
+                            await db.from('usuarios').update({ ultima_actividad: nowIso }).eq('nombre', nombreActual);
                             renderTareas(); renderHistorial();
+                            if(esAdminGlobal) cargarMetrics();
                         }
                     };
                 });
 
-                document.getElementById('cat-vencidas').style.display = lVencidas.children.length ? 'flex' : 'none';
-                document.getElementById('cat-hoy').style.display = lHoy.children.length ? 'flex' : 'none';
-                document.getElementById('cat-sinfecha').style.display = lSinFecha.children.length ? 'flex' : 'none';
-                document.getElementById('cat-futuro').style.display = lFuturo.children.length ? 'flex' : 'none';
+                panelTareas.querySelector('#cat-vencidas').style.display = lVencidas.children.length ? 'flex' : 'none';
+                panelTareas.querySelector('#cat-hoy').style.display = lHoy.children.length ? 'flex' : 'none';
+                panelTareas.querySelector('#cat-sinfecha').style.display = lSinFecha.children.length ? 'flex' : 'none';
+                panelTareas.querySelector('#cat-futuro').style.display = lFuturo.children.length ? 'flex' : 'none';
             }
 
+            // CRONÓMETRO DE ALARMAS
             function cronometro() {
                 db.from('tareas').select('id, fecha_programada, texto').eq('completada', false).ilike('asignado_a', nombreActual).not('fecha_programada', 'is', null).then(({data}) => {
                     if(!data) return; const ahora = new Date();
@@ -603,83 +732,171 @@
             }
             if(temporizadorAlarma) clearInterval(temporizadorAlarma); temporizadorAlarma = setInterval(cronometro, 15000); 
 
-            document.getElementById('banner-enfoque').onclick = async () => { 
-                tareaEnfocadaId = null; document.getElementById('banner-enfoque').style.display = 'none'; 
-                await db.from('usuarios').update({ tarea_enfocada: null }).eq('nombre', nombreActual); renderTareas(); 
+            // SALIR DE MODO ENFOQUE
+            panelTareas.querySelector('#banner-enfoque').onclick = async () => { 
+                tareaEnfocadaId = null; 
+                panelTareas.querySelector('#banner-enfoque').style.display = 'none'; 
+                await db.from('usuarios').update({ tarea_enfocada: null, ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual); 
+                renderTareas(); 
+                if(esAdminGlobal) cargarMetrics();
             };
             
+            // CREAR TAREA (Funciona tanto en Web como desde el Flotante)
+            const inputNuevaTarea = panelTareas.querySelector('#nueva-tarea');
+            const inputFechaTarea = panelTareas.querySelector('#fecha-tarea');
+            const inputPrioTarea = panelTareas.querySelector('#prioridad-tarea');
+            const btnAddTarea = panelTareas.querySelector('#btn-add-tarea');
+
             const createT = async () => { 
-                const tx = document.getElementById('nueva-tarea').value.trim(); if (!tx) return; 
-                const fp = document.getElementById('fecha-tarea').value;
-                await db.from('tareas').insert([{ asignado_a: nombreActual, texto: tx, fecha_programada: fp ? new Date(fp).toISOString() : null, prioridad: parseInt(document.getElementById('prioridad-tarea').value) }]); 
-                document.getElementById('nueva-tarea').value = ''; document.getElementById('fecha-tarea').value = ''; 
-                await db.from('usuarios').update({ ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual); renderTareas(); 
+                const tx = inputNuevaTarea.value.trim(); if (!tx) return; 
+                const fp = inputFechaTarea.value;
+                await db.from('tareas').insert([{ 
+                    asignado_a: nombreActual, 
+                    texto: tx, 
+                    fecha_programada: fp ? new Date(fp).toISOString() : null, 
+                    prioridad: parseInt(inputPrioTarea.value) 
+                }]); 
+                inputNuevaTarea.value = ''; inputFechaTarea.value = ''; 
+                await db.from('usuarios').update({ ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual); 
+                renderTareas(); 
             };
-            document.getElementById('btn-add-tarea').onclick = createT;
-            document.getElementById('nueva-tarea').onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); createT(); } };
+            btnAddTarea.onclick = createT;
+            inputNuevaTarea.onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); createT(); } };
 
             // --- NOTAS ---
+            const listaNotas = tabNotas.querySelector('#lista-notas');
+            const inputNuevaNota = tabNotas.querySelector('#nueva-nota');
+            const btnAddNota = tabNotas.querySelector('#btn-add-nota');
+
             async function renderNotas() {
                 let { data: n } = await db.from('notas').select('*').order('created_at', { ascending: false });
-                const l = document.getElementById('lista-notas'); l.innerHTML = '';
-                if (!n.length) return l.innerHTML = `<div style="font-size:12px; color:var(--secondary); padding: 10px;">Bandeja limpia.</div>`;
+                if (!n) return;
+                listaNotas.innerHTML = '';
+                if (!n.length) return listaNotas.innerHTML = `<div style="font-size:12px; color:var(--secondary); padding: 10px;">Bandeja limpia.</div>`;
                 n.forEach(item => {
                     const div = document.createElement('div'); div.className = 'task-item';
-                    div.innerHTML = `<div class="task-content"><div class="task-text">${linkify(item.texto)}</div></div><button class="btn-txt-sm del-nota" style="align-self:center; color:var(--danger); border:none; cursor:pointer;">🚫</button>`; l.appendChild(div);
+                    div.innerHTML = `<div class="task-content"><div class="task-text">${linkify(item.texto)}</div></div><button class="btn-txt-sm del-nota" style="align-self:center; color:var(--danger); border:none; cursor:pointer;">🚫</button>`; 
+                    listaNotas.appendChild(div);
                     const b = div.querySelector('.del-nota');
-                    b.onclick = async () => { if(!b.dataset.c) { b.dataset.c='1'; b.innerText='❓'; setTimeout(()=>{if(b){b.dataset.c='';b.innerText='🚫';}},2000); } else { await db.from('notas').delete().eq('id', item.id); renderNotas(); }};
+                    b.onclick = async () => { 
+                        if(!b.dataset.c) { b.dataset.c='1'; b.innerText='¿Borrar?'; setTimeout(()=>{if(b){b.dataset.c='';b.innerText='🚫';}},2500); } 
+                        else { await db.from('notas').delete().eq('id', item.id); renderNotas(); }
+                    };
                 });
             }
-            const createN = async () => { const tx = document.getElementById('nueva-nota').value.trim(); if(tx) { await db.from('notas').insert([{ texto: tx }]); document.getElementById('nueva-nota').value = ''; renderNotas(); }};
-            document.getElementById('btn-add-nota').onclick = createN;
-            document.getElementById('nueva-nota').onkeydown = (e) => { if(e.key === 'Enter') { e.preventDefault(); createN(); } };
+            const createN = async () => { 
+                const tx = inputNuevaNota.value.trim(); 
+                if(tx) { await db.from('notas').insert([{ texto: tx }]); inputNuevaNota.value = ''; renderNotas(); }
+            };
+            btnAddNota.onclick = createN;
+            inputNuevaNota.onkeydown = (e) => { if(e.key === 'Enter') { e.preventDefault(); createN(); } };
 
             // --- HISTORIAL ---
+            const listaHistorial = tabHistorial.querySelector('#lista-historial');
+            const btnLimpiarHistorial = tabHistorial.querySelector('#btn-limpiar-historial');
+
             async function renderHistorial() {
-                let { data: t } = await db.from('tareas').select('texto, fecha_completada').eq('completada', true).ilike('asignado_a', nombreActual).order('fecha_completada', { ascending: false }).limit(50);
-                const l = document.getElementById('lista-historial'); l.innerHTML = '';
-                t.forEach(item => { l.innerHTML += `<div class="task-item"><div class="task-content"><div class="task-text" style="color:var(--secondary);">${linkify(item.texto)}</div><div class="task-meta"><span class="task-time">${formatFechaAbsoluta(item.fecha_completada)}</span></div></div></div>`; });
+                let { data: t } = await db.from('tareas').select('texto, fecha_completada, actualizaciones').eq('completada', true).ilike('asignado_a', nombreActual).order('fecha_completada', { ascending: false }).limit(50);
+                if (!t) return;
+                listaHistorial.innerHTML = '';
+                t.forEach(item => { 
+                    const hist = Array.isArray(item.actualizaciones) ? item.actualizaciones : [];
+                    const histHtml = hist.length > 0 ? `<div class="updates-list" style="display:block; margin-top:4px;">` + hist.map(h => `<div class="update-item"><span>[${h.fecha}]</span> ${linkify(h.texto)}</div>`).join('') + `</div>` : '';
+                    listaHistorial.innerHTML += `<div class="task-item"><div class="task-content"><div class="task-text" style="color:var(--secondary);">${linkify(item.texto)}</div><div class="task-meta"><span class="task-time">Finalizada: ${formatFechaAbsoluta(item.fecha_completada)}</span></div>${histHtml}</div></div>`; 
+                });
             }
-            document.getElementById('btn-limpiar-historial').onclick = async () => {
-                let { data: u } = await db.from('usuarios').select('pin').eq('nombre', nombreActual).single();
-                if (prompt("Tu PIN:") === u.pin && confirm("¿Seguro?")) { await db.from('tareas').delete().eq('completada', true).ilike('asignado_a', nombreActual); renderHistorial(); }
+            btnLimpiarHistorial.onclick = async () => {
+                if (!btnLimpiarHistorial.dataset.c) {
+                    btnLimpiarHistorial.dataset.c = '1'; btnLimpiarHistorial.innerText = '¿Confirmar?';
+                    setTimeout(() => { if(btnLimpiarHistorial) { btnLimpiarHistorial.dataset.c = ''; btnLimpiarHistorial.innerText = 'Vaciar'; } }, 3000);
+                } else {
+                    btnLimpiarHistorial.dataset.c = ''; btnLimpiarHistorial.innerText = 'Vaciar';
+                    await db.from('tareas').delete().eq('completada', true).ilike('asignado_a', nombreActual); 
+                    renderHistorial();
+                }
             };
 
             // --- CHAT ---
+            const listaMensajes = tabChat.querySelector('#lista-mensajes');
+            const inputNuevoMensaje = tabChat.querySelector('#nuevo-mensaje');
+            const btnEnviarMsg = tabChat.querySelector('#btn-enviar-msg');
+
             async function renderChat(rt = false) {
                 let { data: m } = await db.from('mensajes').select('*').order('created_at', { ascending: false }).limit(50);
-                const l = document.getElementById('lista-mensajes'); l.innerHTML = '';
-                if (rt && currentTab !== 'chat' && m.length > 0 && m[0].usuario.toLowerCase() !== nombreActual) { emitirAlerta(); document.getElementById('dot-chat').style.display = 'block'; }
-                m.reverse().forEach(item => { l.innerHTML += `<div class="mensaje"><div class="msg-usuario">${item.usuario}</div><div class="msg-texto">${linkify(item.texto)}</div></div>`; });
-                l.scrollTop = l.scrollHeight;
+                if (!m) return;
+                listaMensajes.innerHTML = '';
+                if (rt && m.length > 0 && m[0].usuario.toLowerCase() !== nombreActual) { 
+                    emitirAlerta(); 
+                    if (!tabChat.classList.contains('active')) {
+                        panelUtilidades.querySelector('#dot-chat').style.display = 'block';
+                        panelTareas.querySelector('#dot-chat-pip').style.display = 'block';
+                    }
+                }
+                m.reverse().forEach(item => { 
+                    listaMensajes.innerHTML += `<div class="mensaje"><div class="msg-usuario">${item.usuario}</div><div class="msg-texto">${linkify(item.texto)}</div></div>`; 
+                });
+                listaMensajes.scrollTop = listaMensajes.scrollHeight;
             }
-            const createM = async () => { const tx = document.getElementById('nuevo-mensaje').value.trim(); if(tx) { await db.from('mensajes').insert([{ usuario: nombreActual, texto: tx }]); document.getElementById('nuevo-mensaje').value = ''; await db.from('usuarios').update({ ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual); renderChat(); }};
-            document.getElementById('btn-enviar-msg').onclick = createM;
-            document.getElementById('nuevo-mensaje').onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); createM(); } };
+            const createM = async () => { 
+                const tx = inputNuevoMensaje.value.trim(); 
+                if(tx) { 
+                    await db.from('mensajes').insert([{ usuario: nombreActual, texto: tx }]); 
+                    inputNuevoMensaje.value = ''; 
+                    await db.from('usuarios').update({ ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual); 
+                    renderChat(); 
+                }
+            };
+            btnEnviarMsg.onclick = createM;
+            inputNuevoMensaje.onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); createM(); } };
 
-            // --- EQUIPO ---
-            document.getElementById('btn-limpiar-chat').onclick = async () => { if (confirm("⚠️ ¿Borrar chat global?")) { await db.from('mensajes').delete().neq('id', 0); renderChat(); } };
+            // --- EQUIPO (Contabilización exacta de Hitos y Detección de Enfoque en vivo) ---
+            const btnLimpiarChat = tabEquipo.querySelector('#btn-limpiar-chat');
+            const listaEquipo = tabEquipo.querySelector('#lista-equipo');
+
+            btnLimpiarChat.onclick = async () => { 
+                if (!btnLimpiarChat.dataset.c) {
+                    btnLimpiarChat.dataset.c = '1'; btnLimpiarChat.innerText = '¿Confirmar borrado?';
+                    setTimeout(() => { if(btnLimpiarChat) { btnLimpiarChat.dataset.c = ''; btnLimpiarChat.innerText = 'Borrar Chat Global'; } }, 3000);
+                } else {
+                    btnLimpiarChat.dataset.c = ''; btnLimpiarChat.innerText = 'Borrar Chat Global';
+                    await db.from('mensajes').delete().neq('id', 0); renderChat(); 
+                }
+            };
             
             async function cargarMetrics() {
                 let { data: users } = await db.from('usuarios').select('*').order('created_at', { ascending: true });
                 let { data: tasks } = await db.from('tareas').select('id, asignado_a, completada, prioridad, fecha_programada, fecha_completada, texto, actualizaciones');
-                const l = document.getElementById('lista-equipo'); l.innerHTML = '';
-                const ahora = new Date(); const hoyInicio = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+                if (!users || !tasks) return;
+
+                listaEquipo.innerHTML = '';
+                const ahora = new Date(); 
+                const hoyInicio = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+                const hoyPrefijo = `${ahora.getDate().toString().padStart(2,'0')}/${(ahora.getMonth()+1).toString().padStart(2,'0')}`;
                 
                 users.forEach(u => {
-                    const misTareas = tasks.filter(t => t.asignado_a === u.nombre);
+                    const misTareas = tasks.filter(t => (t.asignado_a || '').toLowerCase() === u.nombre.toLowerCase());
                     const pendientes = misTareas.filter(t => !t.completada);
-                    const compHoy = misTareas.filter(t => t.completada && new Date(t.fecha_completada) >= hoyInicio).length;
+                    const compHoy = misTareas.filter(t => t.completada && t.fecha_completada && new Date(t.fecha_completada) >= hoyInicio).length;
                     
+                    // Contabiliza hitos creados hoy tanto por timestamp ISO como por el prefijo DD/MM
                     let hitosHoy = 0;
-                    misTareas.forEach(t => { if(Array.isArray(t.actualizaciones)) { hitosHoy += t.actualizaciones.filter(a => { try { return new Date(a.fecha.split(' ')[0].split('/').reverse().join('-')) >= hoyInicio; } catch(e){return false;} }).length; }});
+                    misTareas.forEach(t => { 
+                        if(Array.isArray(t.actualizaciones)) { 
+                            hitosHoy += t.actualizaciones.filter(a => { 
+                                if (a.ts) return new Date(a.ts) >= hoyInicio;
+                                if (a.fecha && a.fecha.startsWith(hoyPrefijo)) return true;
+                                return false;
+                            }).length; 
+                        }
+                    });
                     
                     const p1 = pendientes.filter(t => t.prioridad === 1).length;
                     const vencidas = pendientes.filter(t => t.fecha_programada && new Date(t.fecha_programada) < ahora).length;
                     const aFuturo = pendientes.filter(t => t.fecha_programada && new Date(t.fecha_programada) >= ahora).length;
                     
                     const ua = u.ultima_actividad ? formatFechaAbsoluta(u.ultima_actividad) : 'Sin registro';
-                    const enf = u.tarea_enfocada ? (tasks.find(x => x.id === u.tarea_enfocada)?.texto || 'Oculto') : 'Ninguno';
+                    const tareaEnfObj = u.tarea_enfocada ? tasks.find(x => String(x.id) === String(u.tarea_enfocada) && !x.completada) : null;
+                    const enf = tareaEnfObj ? tareaEnfObj.texto : 'Ninguno';
 
                     const div = document.createElement('div'); div.className = 'equipo-card task-item';
                     div.innerHTML = `
@@ -689,22 +906,39 @@
                         </div>
                         <div style="font-size: 11px; color: var(--secondary); line-height: 1.6;">
                             <div>⏱️ Última act: <span style="font-weight: bold; color: var(--primary);">${ua}</span></div>
-                            <div style="color:var(--prio-2); font-weight:600;">🎯 Enfoque: <span style="font-weight:normal; color:var(--secondary);">${enf}</span></div>
+                            <div style="color:${tareaEnfObj ? 'var(--prio-2)' : 'var(--secondary)'}; font-weight:600;">🎯 Enfoque: <span style="font-weight:${tareaEnfObj ? '600' : 'normal'}; color:${tareaEnfObj ? 'var(--primary)' : 'var(--secondary)'};">${enf}</span></div>
                             <div style="margin-top:6px;">📈 Gestiones hoy: <span style="font-weight: bold; color: var(--primary);">${compHoy + hitosHoy}</span> (${compHoy} cerradas + ${hitosHoy} hitos)</div>
                             <div>📋 Pendientes: <span style="font-weight: bold; color: var(--primary);">${pendientes.length}</span> (🔴 ${p1} urgentes | ⏭️ ${aFuturo} a futuro)</div>
                             ${vencidas > 0 ? `<div style="color:var(--danger); font-weight:bold; margin-top:4px;">⚠️ ${vencidas} Tareas vencidas</div>` : ''}
                         </div>`;
-                    l.appendChild(div);
-                    div.querySelector('.reset-pin').onclick = async () => { if(confirm(`¿Resetear PIN?`)) { await db.from('usuarios').update({ pin: null }).eq('nombre', u.nombre); alert("OK"); } };
+                    listaEquipo.appendChild(div);
+                    
+                    const btnReset = div.querySelector('.reset-pin');
+                    btnReset.onclick = async () => { 
+                        if(!btnReset.dataset.c) {
+                            btnReset.dataset.c = '1'; btnReset.innerText = '¿Confirmar?';
+                            setTimeout(() => { if(btnReset) { btnReset.dataset.c = ''; btnReset.innerText = 'Reset PIN'; } }, 2500);
+                        } else {
+                            btnReset.dataset.c = ''; btnReset.innerText = 'Reset PIN';
+                            await db.from('usuarios').update({ pin: null }).eq('nombre', u.nombre); 
+                            alert(`PIN de ${u.nombre} reseteado.`); 
+                        }
+                    };
                 });
             }
 
-            // Realtime
-            db.channel('public:tareas').on('postgres_changes', { event: '*', schema: 'public', table: 'tareas' }, () => { renderTareas(true); renderHistorial(); if(esAdminGlobal && currentTab === 'equipo') cargarMetrics(); }).subscribe();
+            // Suscripciones en Tiempo Real (Tareas, Notas, Mensajes y Usuarios para Enfoque/Actividad)
+            db.channel('public:tareas').on('postgres_changes', { event: '*', schema: 'public', table: 'tareas' }, () => { 
+                renderTareas(true); renderHistorial(); if(esAdminGlobal) cargarMetrics(); 
+            }).subscribe();
+            db.channel('public:usuarios').on('postgres_changes', { event: '*', schema: 'public', table: 'usuarios' }, () => { 
+                if(esAdminGlobal) cargarMetrics(); 
+            }).subscribe();
             db.channel('public:notas').on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => { renderNotas(); }).subscribe();
             db.channel('public:mensajes').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, () => { renderChat(true); }).subscribe();
 
             renderTareas(); renderNotas(); renderChat(); renderHistorial();
+            if(esAdminGlobal) cargarMetrics();
         }
     </script>
 </body>
