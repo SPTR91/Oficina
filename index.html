@@ -24,7 +24,6 @@
         
         #dashboard-app h3 { margin: 0 0 10px 0; font-size: 16px; flex-shrink: 0; color: #1a73e8; display: flex; justify-content: space-between; align-items: center;}
         
-        /* Botones superiores */
         .top-controls { display: flex; gap: 5px; align-items: center; }
         .btn-mute { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 4px; cursor: pointer; font-size: 14px; }
         .btn-mute.muted { background: #ffe6e6; border-color: #d93025; }
@@ -32,11 +31,11 @@
         .search-bar { width: 100%; padding: 6px 8px; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 10px; font-size: 13px; box-sizing: border-box; }
         .banner-enfoque { display: none; background: #fbbc04; padding: 6px; border-radius: 4px; font-weight: bold; text-align: center; margin-bottom: 10px; font-size: 11px; cursor: pointer; color: #333; }
         
-        .tabs { display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; flex-shrink: 0; position: relative;}
+        .tabs { display: flex; gap: 5px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; flex-shrink: 0; position: relative; overflow-x: auto; white-space: nowrap; scrollbar-width: none;}
+        .tabs::-webkit-scrollbar { display: none; }
         .tab-btn { background: none; border: none; cursor: pointer; color: #666; font-weight: bold; font-size: 11px; padding: 5px; position: relative; }
         .tab-btn.active { color: #1a73e8; border-bottom: 2px solid #1a73e8; }
         
-        /* Burbujas de Notificación */
         .badge { display: none; position: absolute; top: -5px; right: -5px; background: #d93025; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; text-align: center; line-height: 16px; }
         
         .contenido-tab { flex-grow: 1; overflow-y: auto; display: none; padding-right: 5px;}
@@ -77,54 +76,37 @@
 </head>
 <body>
 
-    <!-- CONTENEDOR DE AUTENTICACIÓN (LOGIN Y REGISTRO) -->
     <div id="auth-container">
-        
-        <!-- PANTALLA DE LOGIN -->
+        <!-- LOGIN -->
         <div id="login-screen">
             <h2>🔒 Acceso a la Oficina</h2>
             <p style="font-size: 13px; color: #555;">Ingresa con tu usuario y PIN.</p>
-            
             <label style="font-size: 13px; font-weight: bold;">Usuario (Nombre):</label>
             <input type="text" id="login-usr" placeholder="Ej. manuel" style="width: 100%; margin-bottom: 10px;">
-            
             <label style="font-size: 13px; font-weight: bold;">Clave (PIN 4 dígitos):</label>
             <input type="password" id="login-pin" placeholder="****" maxlength="4" style="width: 100%; margin-bottom: 15px;">
-            
             <button id="btn-conectar" class="btn-main" style="width: 100%;">Ingresar</button>
-            
-            <p style="font-size: 13px; text-align: center; margin-top: 15px;">
-                ¿No tienes cuenta? <a href="#" id="link-registro" style="color: #1a73e8; text-decoration: none; font-weight: bold;">Regístrate aquí</a>
-            </p>
+            <p style="font-size: 13px; text-align: center; margin-top: 15px;">¿No tienes cuenta? <a href="#" id="link-registro" style="color: #1a73e8; text-decoration: none; font-weight: bold;">Regístrate aquí</a></p>
         </div>
 
-        <!-- PANTALLA DE REGISTRO -->
+        <!-- REGISTRO -->
         <div id="register-screen" style="display: none;">
             <h2>📝 Crear Cuenta</h2>
             <p style="font-size: 13px; color: #555;">Completa tus datos para unirte al equipo.</p>
-            
             <label style="font-size: 13px; font-weight: bold;">Nombre (Será tu usuario):</label>
             <input type="text" id="reg-nombre" placeholder="Ej. manuel" style="width: 100%; margin-bottom: 10px;">
-            
             <label style="font-size: 13px; font-weight: bold;">Apellido:</label>
-            <input type="text" id="reg-apellido" placeholder="Ej. perez" style="width: 100%; margin-bottom: 10px;">
-            
+            <input type="text" id="reg-apellido" placeholder="Ej. otoya" style="width: 100%; margin-bottom: 10px;">
             <label style="font-size: 13px; font-weight: bold;">Clave (PIN 4 dígitos):</label>
             <input type="password" id="reg-pin" placeholder="****" maxlength="4" style="width: 100%; margin-bottom: 10px;">
-            
             <label style="font-size: 13px; font-weight: bold;">Repetir Clave:</label>
             <input type="password" id="reg-repin" placeholder="****" maxlength="4" style="width: 100%; margin-bottom: 15px;">
-            
             <button id="btn-registrar" class="btn-main" style="width: 100%; background-color: #0f9d58;">Registrarme</button>
-            
-            <p style="font-size: 13px; text-align: center; margin-top: 15px;">
-                ¿Ya tienes cuenta? <a href="#" id="link-login" style="color: #1a73e8; text-decoration: none; font-weight: bold;">Volver al Login</a>
-            </p>
+            <p style="font-size: 13px; text-align: center; margin-top: 15px;">¿Ya tienes cuenta? <a href="#" id="link-login" style="color: #1a73e8; text-decoration: none; font-weight: bold;">Volver al Login</a></p>
         </div>
-
     </div>
 
-    <!-- CONTENEDOR DE LA APP -->
+    <!-- APP CONTAINER -->
     <div id="app-container" style="display: none;">
         <div id="dashboard-app">
             <h3>
@@ -143,6 +125,9 @@
                 <button class="tab-btn" id="btn-tab-notas">NOTAS</button>
                 <button class="tab-btn" id="btn-tab-chat">CHAT <span class="badge" id="badge-chat">1</span></button>
                 <button class="tab-btn" id="btn-tab-historial">HISTORIAL</button>
+                
+                <!-- PESTAÑA EXCLUSIVA PARA EL ADMIN -->
+                <button class="tab-btn" id="btn-tab-equipo" style="display: none; color: #d93025;">EQUIPO 👑</button>
             </div>
 
             <div id="tab-tareas" class="contenido-tab active">
@@ -174,6 +159,14 @@
             <div id="tab-historial" class="contenido-tab">
                 <div id="lista-historial" style="font-size: 13px; color: #666;">Cargando tu historial...</div>
             </div>
+            
+            <!-- CONTENIDO DE LA PESTAÑA ADMIN -->
+            <div id="tab-equipo" class="contenido-tab">
+                <div style="font-size: 12px; color: #555; margin-bottom: 10px; background: #ffe6e6; padding: 8px; border-radius: 4px; border: 1px solid #ffcccc;">
+                    <b>Panel de Control Maestro.</b> Aquí puedes ver los accesos de tu equipo.
+                </div>
+                <div id="lista-equipo" style="font-size: 13px; color: #666;">Cargando equipo...</div>
+            </div>
         </div>
 
         <div class="admin-panel" id="admin-panel">
@@ -199,14 +192,12 @@
         const db = window.supabase.createClient(supabaseUrl, supabaseKey);
         
         let nombreActual = "";
+        let esAdminGlobal = false;
         let tareaEnfocadaId = null;
         let isMuted = false;
         
-        // Contadores
-        let noLeidosChat = 0;
-        let ultimasTareasCargadas = 0;
-        let tareasAlertadas = new Set();
-        let temporizadorAlarma = null;
+        let noLeidosChat = 0; let ultimasTareasCargadas = 0;
+        let tareasAlertadas = new Set(); let temporizadorAlarma = null;
 
         const dashboardApp = document.getElementById('dashboard-app');
         const buscadorInput = document.getElementById('buscador');
@@ -215,7 +206,6 @@
         const registerScreen = document.getElementById('register-screen');
         const appContainer = document.getElementById('app-container');
         
-        // --- SONIDO ---
         function emitirPitido() {
             if (isMuted) return;
             try {
@@ -234,7 +224,6 @@
             e.target.classList.toggle('muted');
         });
 
-        // --- BUSCADOR ---
         function aplicarFiltro() {
             const term = buscadorInput.value.toLowerCase();
             dashboardApp.querySelectorAll('.task-item, .mensaje').forEach(el => {
@@ -246,23 +235,11 @@
         const linkify = (text) => text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank" style="color:#1a73e8; text-decoration:none;">${url}</a>`);
 
         // ==========================================
-        // 2. SISTEMA DE REGISTRO Y LOGIN EN LA NUBE
+        // 2. REGISTRO Y LOGIN EN LA NUBE
         // ==========================================
-        
-        // Alternar vistas
-        document.getElementById('link-registro').addEventListener('click', (e) => {
-            e.preventDefault();
-            loginScreen.style.display = 'none';
-            registerScreen.style.display = 'block';
-        });
+        document.getElementById('link-registro').addEventListener('click', (e) => { e.preventDefault(); loginScreen.style.display = 'none'; registerScreen.style.display = 'block'; });
+        document.getElementById('link-login').addEventListener('click', (e) => { e.preventDefault(); registerScreen.style.display = 'none'; loginScreen.style.display = 'block'; });
 
-        document.getElementById('link-login').addEventListener('click', (e) => {
-            e.preventDefault();
-            registerScreen.style.display = 'none';
-            loginScreen.style.display = 'block';
-        });
-
-        // Función de Registro
         document.getElementById('btn-registrar').addEventListener('click', async () => {
             const nom = document.getElementById('reg-nombre').value.trim().toLowerCase();
             const ape = document.getElementById('reg-apellido').value.trim();
@@ -274,61 +251,37 @@
             if (pin.length < 4) return alert("El PIN debe tener 4 dígitos.");
 
             document.getElementById('btn-registrar').innerText = "Registrando...";
-
-            // Verificar si existe
             let { data: existe } = await db.from('usuarios').select('nombre').eq('nombre', nom).single();
-            if (existe) {
-                document.getElementById('btn-registrar').innerText = "Registrarme";
-                return alert(`❌ El usuario '${nom}' ya existe. Elige otro nombre o inicia sesión.`);
-            }
+            if (existe) { document.getElementById('btn-registrar').innerText = "Registrarme"; return alert(`❌ El usuario '${nom}' ya existe.`); }
 
-            // Insertar
-            let { error } = await db.from('usuarios').insert([{ nombre: nom, apellido: ape, pin: pin }]);
-            if (error) {
-                document.getElementById('btn-registrar').innerText = "Registrarme";
-                return alert("Error al registrar: " + error.message);
-            }
+            let { error } = await db.from('usuarios').insert([{ nombre: nom, apellido: ape, pin: pin, es_admin: false }]);
+            if (error) { document.getElementById('btn-registrar').innerText = "Registrarme"; return alert("Error: " + error.message); }
 
             alert("✅ ¡Registro exitoso! Ya puedes iniciar sesión.");
-            
-            // Volver a login y autocompletar nombre
-            document.getElementById('reg-nombre').value = ''; document.getElementById('reg-apellido').value = '';
-            document.getElementById('reg-pin').value = ''; document.getElementById('reg-repin').value = '';
+            document.getElementById('reg-nombre').value = ''; document.getElementById('reg-apellido').value = ''; document.getElementById('reg-pin').value = ''; document.getElementById('reg-repin').value = '';
             document.getElementById('btn-registrar').innerText = "Registrarme";
-            
-            registerScreen.style.display = 'none';
-            loginScreen.style.display = 'block';
-            document.getElementById('login-usr').value = nom;
-            document.getElementById('login-pin').focus();
+            registerScreen.style.display = 'none'; loginScreen.style.display = 'block';
+            document.getElementById('login-usr').value = nom; document.getElementById('login-pin').focus();
         });
 
-        // Función de Login
         document.getElementById('btn-conectar').addEventListener('click', async () => {
             let usrInput = document.getElementById('login-usr').value.trim().toLowerCase();
             const pinInput = document.getElementById('login-pin').value.trim();
             
             if (!usrInput || !pinInput) return alert("Completa ambos campos.");
-            
             document.getElementById('btn-conectar').innerText = "Verificando...";
 
-            // Admin Maestro Bypass
-            if (usrInput === "admin" && pinInput === "admin123") {
-                usrInput = prompt("Admin: ¿A nombre de qué usuario quieres entrar?");
-                if(!usrInput) { document.getElementById('btn-conectar').innerText = "Ingresar"; return; }
-                usrInput = usrInput.toLowerCase();
-            } else {
-                // Verificar en la Nube
-                let { data: usuario, error } = await db.from('usuarios').select('*').eq('nombre', usrInput).single();
-                
-                if (usuario) {
-                    if (usuario.pin !== pinInput) {
-                        document.getElementById('btn-conectar').innerText = "Ingresar";
-                        return alert("❌ PIN incorrecto.");
-                    }
-                } else {
+            let { data: usuario, error } = await db.from('usuarios').select('*').eq('nombre', usrInput).single();
+            
+            if (usuario) {
+                if (usuario.pin !== pinInput) {
                     document.getElementById('btn-conectar').innerText = "Ingresar";
-                    return alert("❌ Usuario no encontrado. Por favor, regístrate primero haciendo clic en el enlace de abajo.");
+                    return alert("❌ PIN incorrecto.");
                 }
+                esAdminGlobal = usuario.es_admin; // VERIFICA SI ERES ADMIN
+            } else {
+                document.getElementById('btn-conectar').innerText = "Ingresar";
+                return alert("❌ Usuario no encontrado. Por favor, regístrate primero.");
             }
 
             nombreActual = usrInput;
@@ -336,62 +289,57 @@
             appContainer.style.display = 'block';
             document.getElementById('saludo-usuario').innerText = `Oficina de ${nombreActual.charAt(0).toUpperCase() + nombreActual.slice(1)}`;
             
-            // Permisos de Notificación nativa
-            if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
-                Notification.requestPermission();
+            if (esAdminGlobal) {
+                document.getElementById('btn-tab-equipo').style.display = 'inline-block';
             }
             
+            if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission();
             arrancarAplicacion();
         });
 
         // ==========================================
-        // 3. PIP Y APLICACIÓN
+        // 3. APLICACIÓN PRINCIPAL
         // ==========================================
         document.getElementById('btn-pip').addEventListener('click', async () => {
-            if (!('documentPictureInPicture' in window)) return alert("Tu navegador no soporta PiP.");
+            if (!('documentPictureInPicture' in window)) return alert("Navegador no soporta PiP.");
             const btnPip = document.getElementById('btn-pip');
             const pipWindow = await documentPictureInPicture.requestWindow({ width: 400, height: 550 });
             pipWindow.document.body.classList.add('pip-mode');
             document.querySelectorAll('style').forEach(s => pipWindow.document.head.appendChild(s.cloneNode(true)));
             pipWindow.document.body.appendChild(dashboardApp);
             btnPip.style.display = 'none';
-            pipWindow.addEventListener('pagehide', () => {
-                document.getElementById('app-container').insertBefore(dashboardApp, document.getElementById('admin-panel'));
-                btnPip.style.display = 'block';
-            });
+            pipWindow.addEventListener('pagehide', () => { document.getElementById('app-container').insertBefore(dashboardApp, document.getElementById('admin-panel')); btnPip.style.display = 'block'; });
         });
 
         let vistaActual = 'tareas'; 
 
         function arrancarAplicacion() {
-            // Limpieza y manejo de Pestañas
-            const pestanas = ['tareas', 'notas', 'chat', 'historial'];
+            const pestanas = ['tareas', 'notas', 'chat', 'historial', 'equipo'];
             pestanas.forEach(p => {
-                dashboardApp.querySelector(`#btn-tab-${p}`).addEventListener('click', () => {
+                const btn = dashboardApp.querySelector(`#btn-tab-${p}`);
+                if(!btn) return;
+                btn.addEventListener('click', () => {
                     vistaActual = p;
-                    pestanas.forEach(px => { dashboardApp.querySelector(`#btn-tab-${px}`).classList.remove('active'); dashboardApp.querySelector(`#tab-${px}`).classList.remove('active'); });
-                    dashboardApp.querySelector(`#btn-tab-${p}`).classList.add('active'); dashboardApp.querySelector(`#tab-${p}`).classList.add('active');
+                    pestanas.forEach(px => { 
+                        const bx = dashboardApp.querySelector(`#btn-tab-${px}`);
+                        const tx = dashboardApp.querySelector(`#tab-${px}`);
+                        if(bx) bx.classList.remove('active'); 
+                        if(tx) tx.classList.remove('active'); 
+                    });
+                    btn.classList.add('active'); 
+                    dashboardApp.querySelector(`#tab-${p}`).classList.add('active');
                     
-                    if (p === 'chat') { 
-                        const m = dashboardApp.querySelector('#lista-mensajes'); m.scrollTop = m.scrollHeight; 
-                        noLeidosChat = 0; dashboardApp.querySelector('#badge-chat').style.display = 'none';
-                    }
-                    if (p === 'tareas') {
-                        dashboardApp.querySelector('#badge-tareas').style.display = 'none';
-                    }
+                    if (p === 'chat') { const m = dashboardApp.querySelector('#lista-mensajes'); m.scrollTop = m.scrollHeight; noLeidosChat = 0; dashboardApp.querySelector('#badge-chat').style.display = 'none'; }
+                    if (p === 'tareas') dashboardApp.querySelector('#badge-tareas').style.display = 'none';
+                    if (p === 'equipo' && esAdminGlobal) cargarEquipo();
                 });
             });
 
-            // --- TAREAS ---
             async function cargarTareas(vieneDeTiempoReal = false) {
                 let { data: tareas } = await db.from('tareas').select('*').eq('completada', false).ilike('asignado_a', nombreActual).order('prioridad', { ascending: true }).order('created_at', { ascending: true });
                 const lista = dashboardApp.querySelector('#lista-tareas'); lista.innerHTML = '';
                 
-                // Alertar si llegó una nueva tarea de otro lado
-                if (vieneDeTiempoReal && tareas.length > ultimasTareasCargadas) {
-                    emitirPitido();
-                    if(vistaActual !== 'tareas') dashboardApp.querySelector('#badge-tareas').style.display = 'block';
-                }
+                if (vieneDeTiempoReal && tareas.length > ultimasTareasCargadas) { emitirPitido(); if(vistaActual !== 'tareas') dashboardApp.querySelector('#badge-tareas').style.display = 'block'; }
                 ultimasTareasCargadas = tareas.length;
 
                 const tareasMostrar = tareaEnfocadaId ? tareas.filter(t => t.id === tareaEnfocadaId) : tareas;
@@ -421,13 +369,10 @@
                     
                     const transferir = async () => { 
                         const dest = tInput.value.trim().toLowerCase(); if (!dest) return; 
-                        
                         let { data: destUser } = await db.from('usuarios').select('nombre').eq('nombre', dest).single();
                         if(!destUser) return alert(`El usuario '${dest}' no existe en el sistema.`);
-                        
                         div.querySelector('.btn-ok-trans').innerText = "...";
-                        await db.from('tareas').update({ asignado_a: dest }).eq('id', t.id); 
-                        cargarTareas(); 
+                        await db.from('tareas').update({ asignado_a: dest }).eq('id', t.id); cargarTareas(); 
                     };
                     div.querySelector('.btn-ok-trans').addEventListener('click', transferir); tInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') transferir(); });
                     
@@ -440,37 +385,27 @@
                 aplicarFiltro();
             }
 
-            // --- ALARMAS POR HORA ---
             function revisarReloj() {
                 db.from('tareas').select('*').eq('completada', false).ilike('asignado_a', nombreActual).then(({data}) => {
                     if(!data) return;
-                    const ahora = new Date();
-                    const horaFormato = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
-                    
+                    const ahora = new Date(); const horaFormato = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
                     data.forEach(t => {
                         if (t.hora_vencimiento === horaFormato && !tareasAlertadas.has(t.id)) {
-                            emitirPitido();
-                            if (Notification.permission === "granted") {
-                                new Notification("⏰ Hora de tu tarea:", { body: t.texto });
-                            }
+                            emitirPitido(); if (Notification.permission === "granted") new Notification("⏰ Hora de tu tarea:", { body: t.texto });
                             tareasAlertadas.add(t.id);
                         }
                     });
                 });
             }
-            if(temporizadorAlarma) clearInterval(temporizadorAlarma);
-            temporizadorAlarma = setInterval(revisarReloj, 15000); 
+            if(temporizadorAlarma) clearInterval(temporizadorAlarma); temporizadorAlarma = setInterval(revisarReloj, 15000); 
 
             dashboardApp.querySelector('#banner-enfoque').addEventListener('click', () => { tareaEnfocadaId = null; dashboardApp.querySelector('#banner-enfoque').style.display = 'none'; cargarTareas(); });
-            
             dashboardApp.querySelector('#btn-add-tarea').addEventListener('click', async () => { const txt = dashboardApp.querySelector('#nueva-tarea').value.trim(); if (!txt) return; await db.from('tareas').insert([{ asignado_a: nombreActual, texto: txt, hora_vencimiento: dashboardApp.querySelector('#hora-tarea').value || null, prioridad: parseInt(dashboardApp.querySelector('#prioridad-tarea').value)||3 }]); dashboardApp.querySelector('#nueva-tarea').value = ''; dashboardApp.querySelector('#hora-tarea').value = ''; cargarTareas(); });
 
-            // --- NOTAS ---
             async function cargarNotas() {
                 let { data: notas } = await db.from('notas').select('*').order('created_at', { ascending: false });
                 const lista = dashboardApp.querySelector('#lista-notas'); lista.innerHTML = '';
                 if (notas.length === 0) return lista.innerHTML = '<div style="text-align:center; margin-top:20px;">No hay notas del equipo.</div>';
-                
                 notas.forEach(n => {
                     const div = document.createElement('div'); div.className = 'task-item'; div.innerHTML = `<div class="task-content"><span class="task-text">📌 ${linkify(n.texto)}</span></div><button class="btn-delete-note">✖</button>`; lista.appendChild(div);
                     const btnDel = div.querySelector('.btn-delete-note');
@@ -482,39 +417,54 @@
             }
             dashboardApp.querySelector('#btn-add-nota').addEventListener('click', async () => { const txt = dashboardApp.querySelector('#nueva-nota').value.trim(); if (txt) { await db.from('notas').insert([{ texto: txt }]); dashboardApp.querySelector('#nueva-nota').value = ''; cargarNotas(); }});
 
-            // --- HISTORIAL ---
             async function cargarHistorial() {
                 let { data: tareas } = await db.from('tareas').select('*').eq('completada', true).ilike('asignado_a', nombreActual).order('fecha_completada', { ascending: false }).limit(50);
                 const lista = dashboardApp.querySelector('#lista-historial'); lista.innerHTML = '';
                 tareas.forEach(t => { const f = t.fecha_completada ? new Date(t.fecha_completada).toLocaleString() : ''; lista.innerHTML += `<div class="task-item"><div class="prio-bar prio-${t.prioridad}"></div><div class="task-content"><span class="task-text" style="text-decoration:line-through;color:#999">✅ ${linkify(t.texto)}</span><span class="task-time">${f}</span></div></div>`; }); aplicarFiltro();
             }
 
-            // --- CHAT Y BURBUJA ---
             async function cargarMensajes(vieneDeTiempoReal = false) {
                 let { data: mensajes } = await db.from('mensajes').select('*').order('created_at', { ascending: false }).limit(50);
                 const lista = dashboardApp.querySelector('#lista-mensajes'); lista.innerHTML = '';
                 
                 if (vieneDeTiempoReal && vistaActual !== 'chat' && mensajes.length > 0) {
                     if(mensajes[0].usuario.toLowerCase() !== nombreActual) {
-                        emitirPitido();
-                        noLeidosChat++;
-                        const badge = dashboardApp.querySelector('#badge-chat');
-                        badge.innerText = noLeidosChat > 9 ? '9+' : noLeidosChat;
-                        badge.style.display = 'block';
+                        emitirPitido(); noLeidosChat++; const badge = dashboardApp.querySelector('#badge-chat');
+                        badge.innerText = noLeidosChat > 9 ? '9+' : noLeidosChat; badge.style.display = 'block';
                     }
                 }
-
                 mensajes.reverse().forEach(m => { lista.innerHTML += `<div class="mensaje"><div class="msg-usuario">${m.usuario.charAt(0).toUpperCase() + m.usuario.slice(1)}</div><div>${linkify(m.texto)}</div></div>`; });
                 lista.scrollTop = lista.scrollHeight; aplicarFiltro();
             }
             dashboardApp.querySelector('#btn-enviar-msg').addEventListener('click', async () => { const txt = dashboardApp.querySelector('#nuevo-mensaje').value.trim(); if (txt) { await db.from('mensajes').insert([{ usuario: nombreActual, texto: txt }]); dashboardApp.querySelector('#nuevo-mensaje').value = ''; cargarMensajes(); }});
 
+            // CARGA EXCLUSIVA ADMIN
+            async function cargarEquipo() {
+                let { data: usuarios } = await db.from('usuarios').select('*').order('created_at', { ascending: true });
+                let { data: tareas } = await db.from('tareas').select('asignado_a, completada');
+                
+                const lista = dashboardApp.querySelector('#lista-equipo'); lista.innerHTML = '';
+                usuarios.forEach(u => {
+                    const tareasPendientes = tareas.filter(t => t.asignado_a === u.nombre && !t.completada).length;
+                    const div = document.createElement('div'); div.className = 'task-item'; div.style.flexDirection = 'column';
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content: space-between; width: 100%;">
+                            <span style="font-weight:bold; color:#1a73e8;">👤 ${u.nombre.toUpperCase()} ${u.apellido || ''}</span>
+                            <span style="font-size: 11px; color: #d93025; border: 1px solid #ffcccc; padding: 2px 4px; border-radius: 4px;">PIN: ${u.pin}</span>
+                        </div>
+                        <div style="font-size: 11px; color: #666; margin-top: 4px;">
+                            Tareas Pendientes: <b>${tareasPendientes}</b> ${u.es_admin ? ' | 👑 Admin' : ''}
+                        </div>
+                    `;
+                    lista.appendChild(div);
+                });
+            }
+
             dashboardApp.querySelector('#nueva-tarea').addEventListener('keypress', (e) => { if (e.key === 'Enter') dashboardApp.querySelector('#btn-add-tarea').click(); });
             dashboardApp.querySelector('#nueva-nota').addEventListener('keypress', (e) => { if (e.key === 'Enter') dashboardApp.querySelector('#btn-add-nota').click(); });
             dashboardApp.querySelector('#nuevo-mensaje').addEventListener('keypress', (e) => { if (e.key === 'Enter') dashboardApp.querySelector('#btn-enviar-msg').click(); });
 
-            // Eventos Realtime
-            db.channel('public:tareas').on('postgres_changes', { event: '*', schema: 'public', table: 'tareas' }, payload => { cargarTareas(true); cargarHistorial(); }).subscribe();
+            db.channel('public:tareas').on('postgres_changes', { event: '*', schema: 'public', table: 'tareas' }, payload => { cargarTareas(true); cargarHistorial(); if(esAdminGlobal && vistaActual === 'equipo') cargarEquipo(); }).subscribe();
             db.channel('public:notas').on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, payload => { cargarNotas(); }).subscribe();
             db.channel('public:mensajes').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, payload => { cargarMensajes(true); }).subscribe();
 
@@ -522,7 +472,7 @@
         }
 
         // ==========================================
-        // 4. FUNCIONES ADMIN
+        // 4. FUNCIONES EXTRAS (Panel Principal)
         // ==========================================
         document.getElementById('btn-exportar').addEventListener('click', async () => {
             let { data } = await db.from('tareas').select('*').ilike('asignado_a', nombreActual).order('created_at', { ascending: true });
@@ -530,7 +480,7 @@
             data.forEach(t => { csv += `"${t.completada?"Completada":"Pendiente"}","${t.prioridad===1?"Alta":t.prioridad===2?"Media":"Baja"}","${t.texto.replace(/"/g,'""')}","${t.hora_vencimiento||'Sin hora'}","${new Date(t.created_at).toLocaleString()}","${t.fecha_completada?new Date(t.fecha_completada).toLocaleString():'N/A'}"\n`; });
             let link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `Reporte_${nombreActual}.csv`; link.click();
         });
-        document.getElementById('btn-borrar').addEventListener('click', async () => { if (prompt("PIN de administrador:") === "admin123" && confirm("¿Seguro?")) { await db.from('tareas').delete().eq('completada', true).ilike('asignado_a', nombreActual); alert("✅ Limpio."); }});
+        document.getElementById('btn-borrar').addEventListener('click', async () => { if (prompt("Tu PIN para confirmar:") && confirm("¿Seguro?")) { await db.from('tareas').delete().eq('completada', true).ilike('asignado_a', nombreActual); alert("✅ Limpio."); }});
         document.getElementById('btn-importar').addEventListener('click', () => {
             const fileInput = document.getElementById('file-csv'); if (!fileInput.files.length) return alert("Selecciona .csv");
             const reader = new FileReader();
