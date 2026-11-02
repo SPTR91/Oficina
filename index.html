@@ -11,7 +11,7 @@
         .admin-panel { margin-top: 20px; padding: 20px; background: #e9eef6; border-radius: 8px; max-width: 400px; border: 1px solid #cdd6e5; }
         
         /* Contenedores principales */
-        #login-screen { max-width: 400px; margin-bottom: 20px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        #auth-container { max-width: 400px; margin-bottom: 20px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         #app-container { max-width: 400px; margin-bottom: 20px; }
         
         /* APP EN SÍ */
@@ -24,7 +24,7 @@
         
         #dashboard-app h3 { margin: 0 0 10px 0; font-size: 16px; flex-shrink: 0; color: #1a73e8; display: flex; justify-content: space-between; align-items: center;}
         
-        /* Botones superiores (Silencio y PiP) */
+        /* Botones superiores */
         .top-controls { display: flex; gap: 5px; align-items: center; }
         .btn-mute { background: none; border: 1px solid #ccc; border-radius: 4px; padding: 4px; cursor: pointer; font-size: 14px; }
         .btn-mute.muted { background: #ffe6e6; border-color: #d93025; }
@@ -51,7 +51,7 @@
         .prio-input { width: 45px; text-align: center; padding: 6px 0;}
         
         .task-item { display: flex; align-items: stretch; padding: 8px 5px; border-bottom: 1px solid #f0f0f0; transition: background 0.3s; }
-        .task-item.highlight { background: #fff8e1; } /* Brillo de nueva tarea */
+        .task-item.highlight { background: #fff8e1; } 
         .prio-bar { width: 6px; cursor: pointer; margin-right: 8px; border-radius: 4px; flex-shrink: 0; transition: transform 0.1s; }
         .prio-bar:hover { filter: brightness(0.8); transform: scaleX(1.5); }
         .prio-1 { background-color: #d93025; } .prio-2 { background-color: #fbbc04; } .prio-3 { background-color: #34a853; } 
@@ -77,19 +77,51 @@
 </head>
 <body>
 
-    <!-- PANTALLA DE LOGIN SEGURO EN LA NUBE -->
-    <div id="login-screen">
-        <h2>🔒 Acceso a la Oficina</h2>
-        <p style="font-size: 13px; color: #555;">Ingresa con tu usuario y PIN.</p>
+    <!-- CONTENEDOR DE AUTENTICACIÓN (LOGIN Y REGISTRO) -->
+    <div id="auth-container">
         
-        <label style="font-size: 13px; font-weight: bold;">Usuario:</label>
-        <input type="text" id="login-usr" placeholder="Ej. manuel" style="width: 100%; margin-bottom: 10px;">
-        
-        <label style="font-size: 13px; font-weight: bold;">PIN (4 dígitos):</label>
-        <input type="password" id="login-pin" placeholder="****" maxlength="4" style="width: 100%; margin-bottom: 15px;">
-        
-        <button id="btn-conectar" class="btn-main" style="width: 100%;">Ingresar</button>
-        <p style="font-size: 11px; color: #888; text-align: center; margin-top: 10px;">(Si el usuario no existe, se registrará con el PIN ingresado).</p>
+        <!-- PANTALLA DE LOGIN -->
+        <div id="login-screen">
+            <h2>🔒 Acceso a la Oficina</h2>
+            <p style="font-size: 13px; color: #555;">Ingresa con tu usuario y PIN.</p>
+            
+            <label style="font-size: 13px; font-weight: bold;">Usuario (Nombre):</label>
+            <input type="text" id="login-usr" placeholder="Ej. manuel" style="width: 100%; margin-bottom: 10px;">
+            
+            <label style="font-size: 13px; font-weight: bold;">Clave (PIN 4 dígitos):</label>
+            <input type="password" id="login-pin" placeholder="****" maxlength="4" style="width: 100%; margin-bottom: 15px;">
+            
+            <button id="btn-conectar" class="btn-main" style="width: 100%;">Ingresar</button>
+            
+            <p style="font-size: 13px; text-align: center; margin-top: 15px;">
+                ¿No tienes cuenta? <a href="#" id="link-registro" style="color: #1a73e8; text-decoration: none; font-weight: bold;">Regístrate aquí</a>
+            </p>
+        </div>
+
+        <!-- PANTALLA DE REGISTRO -->
+        <div id="register-screen" style="display: none;">
+            <h2>📝 Crear Cuenta</h2>
+            <p style="font-size: 13px; color: #555;">Completa tus datos para unirte al equipo.</p>
+            
+            <label style="font-size: 13px; font-weight: bold;">Nombre (Será tu usuario):</label>
+            <input type="text" id="reg-nombre" placeholder="Ej. manuel" style="width: 100%; margin-bottom: 10px;">
+            
+            <label style="font-size: 13px; font-weight: bold;">Apellido:</label>
+            <input type="text" id="reg-apellido" placeholder="Ej. perez" style="width: 100%; margin-bottom: 10px;">
+            
+            <label style="font-size: 13px; font-weight: bold;">Clave (PIN 4 dígitos):</label>
+            <input type="password" id="reg-pin" placeholder="****" maxlength="4" style="width: 100%; margin-bottom: 10px;">
+            
+            <label style="font-size: 13px; font-weight: bold;">Repetir Clave:</label>
+            <input type="password" id="reg-repin" placeholder="****" maxlength="4" style="width: 100%; margin-bottom: 15px;">
+            
+            <button id="btn-registrar" class="btn-main" style="width: 100%; background-color: #0f9d58;">Registrarme</button>
+            
+            <p style="font-size: 13px; text-align: center; margin-top: 15px;">
+                ¿Ya tienes cuenta? <a href="#" id="link-login" style="color: #1a73e8; text-decoration: none; font-weight: bold;">Volver al Login</a>
+            </p>
+        </div>
+
     </div>
 
     <!-- CONTENEDOR DE LA APP -->
@@ -113,7 +145,6 @@
                 <button class="tab-btn" id="btn-tab-historial">HISTORIAL</button>
             </div>
 
-            <!-- TAREAS -->
             <div id="tab-tareas" class="contenido-tab active">
                 <div class="input-group">
                     <input type="text" id="nueva-tarea" class="task-input" placeholder="¿Qué hacer?">
@@ -124,7 +155,6 @@
                 <div id="lista-tareas" style="font-size: 13px; color: #666;">Cargando tus tareas...</div>
             </div>
 
-            <!-- NOTAS -->
             <div id="tab-notas" class="contenido-tab">
                 <div class="input-group">
                     <input type="text" id="nueva-nota" class="task-input" placeholder="Guardar enlace o nota...">
@@ -133,7 +163,6 @@
                 <div id="lista-notas" style="font-size: 13px; color: #666;">Cargando notas...</div>
             </div>
 
-            <!-- CHAT -->
             <div id="tab-chat" class="contenido-tab">
                 <div id="lista-mensajes" style="height: 320px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; color: #666;">Cargando chat...</div>
                 <div style="display: flex; gap: 5px;">
@@ -142,7 +171,6 @@
                 </div>
             </div>
 
-            <!-- HISTORIAL -->
             <div id="tab-historial" class="contenido-tab">
                 <div id="lista-historial" style="font-size: 13px; color: #666;">Cargando tu historial...</div>
             </div>
@@ -182,6 +210,10 @@
 
         const dashboardApp = document.getElementById('dashboard-app');
         const buscadorInput = document.getElementById('buscador');
+        const authContainer = document.getElementById('auth-container');
+        const loginScreen = document.getElementById('login-screen');
+        const registerScreen = document.getElementById('register-screen');
+        const appContainer = document.getElementById('app-container');
         
         // --- SONIDO ---
         function emitirPitido() {
@@ -214,8 +246,63 @@
         const linkify = (text) => text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank" style="color:#1a73e8; text-decoration:none;">${url}</a>`);
 
         // ==========================================
-        // 2. SISTEMA DE LOGIN EN LA NUBE
+        // 2. SISTEMA DE REGISTRO Y LOGIN EN LA NUBE
         // ==========================================
+        
+        // Alternar vistas
+        document.getElementById('link-registro').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginScreen.style.display = 'none';
+            registerScreen.style.display = 'block';
+        });
+
+        document.getElementById('link-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            registerScreen.style.display = 'none';
+            loginScreen.style.display = 'block';
+        });
+
+        // Función de Registro
+        document.getElementById('btn-registrar').addEventListener('click', async () => {
+            const nom = document.getElementById('reg-nombre').value.trim().toLowerCase();
+            const ape = document.getElementById('reg-apellido').value.trim();
+            const pin = document.getElementById('reg-pin').value.trim();
+            const repin = document.getElementById('reg-repin').value.trim();
+
+            if (!nom || !ape || !pin || !repin) return alert("Completa todos los campos.");
+            if (pin !== repin) return alert("Las claves no coinciden.");
+            if (pin.length < 4) return alert("El PIN debe tener 4 dígitos.");
+
+            document.getElementById('btn-registrar').innerText = "Registrando...";
+
+            // Verificar si existe
+            let { data: existe } = await db.from('usuarios').select('nombre').eq('nombre', nom).single();
+            if (existe) {
+                document.getElementById('btn-registrar').innerText = "Registrarme";
+                return alert(`❌ El usuario '${nom}' ya existe. Elige otro nombre o inicia sesión.`);
+            }
+
+            // Insertar
+            let { error } = await db.from('usuarios').insert([{ nombre: nom, apellido: ape, pin: pin }]);
+            if (error) {
+                document.getElementById('btn-registrar').innerText = "Registrarme";
+                return alert("Error al registrar: " + error.message);
+            }
+
+            alert("✅ ¡Registro exitoso! Ya puedes iniciar sesión.");
+            
+            // Volver a login y autocompletar nombre
+            document.getElementById('reg-nombre').value = ''; document.getElementById('reg-apellido').value = '';
+            document.getElementById('reg-pin').value = ''; document.getElementById('reg-repin').value = '';
+            document.getElementById('btn-registrar').innerText = "Registrarme";
+            
+            registerScreen.style.display = 'none';
+            loginScreen.style.display = 'block';
+            document.getElementById('login-usr').value = nom;
+            document.getElementById('login-pin').focus();
+        });
+
+        // Función de Login
         document.getElementById('btn-conectar').addEventListener('click', async () => {
             let usrInput = document.getElementById('login-usr').value.trim().toLowerCase();
             const pinInput = document.getElementById('login-pin').value.trim();
@@ -239,19 +326,14 @@
                         return alert("❌ PIN incorrecto.");
                     }
                 } else {
-                    // No existe, registrarlo en la nube
-                    let { error: errInsert } = await db.from('usuarios').insert([{ nombre: usrInput, pin: pinInput }]);
-                    if (errInsert) {
-                        document.getElementById('btn-conectar').innerText = "Ingresar";
-                        return alert("Error al registrar: " + errInsert.message);
-                    }
-                    alert(`✅ Nuevo usuario '${usrInput}' registrado.`);
+                    document.getElementById('btn-conectar').innerText = "Ingresar";
+                    return alert("❌ Usuario no encontrado. Por favor, regístrate primero haciendo clic en el enlace de abajo.");
                 }
             }
 
             nombreActual = usrInput;
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-container').style.display = 'block';
+            authContainer.style.display = 'none';
+            appContainer.style.display = 'block';
             document.getElementById('saludo-usuario').innerText = `Oficina de ${nombreActual.charAt(0).toUpperCase() + nombreActual.slice(1)}`;
             
             // Permisos de Notificación nativa
@@ -340,7 +422,6 @@
                     const transferir = async () => { 
                         const dest = tInput.value.trim().toLowerCase(); if (!dest) return; 
                         
-                        // Verificamos si existe el destino en la tabla usuarios para evitar transferir al vacío
                         let { data: destUser } = await db.from('usuarios').select('nombre').eq('nombre', dest).single();
                         if(!destUser) return alert(`El usuario '${dest}' no existe en el sistema.`);
                         
@@ -378,7 +459,7 @@
                 });
             }
             if(temporizadorAlarma) clearInterval(temporizadorAlarma);
-            temporizadorAlarma = setInterval(revisarReloj, 15000); // Revisa cada 15 segundos
+            temporizadorAlarma = setInterval(revisarReloj, 15000); 
 
             dashboardApp.querySelector('#banner-enfoque').addEventListener('click', () => { tareaEnfocadaId = null; dashboardApp.querySelector('#banner-enfoque').style.display = 'none'; cargarTareas(); });
             
