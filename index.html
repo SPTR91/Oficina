@@ -338,7 +338,8 @@
         let tareasAlertadas = new Set(); 
         let temporizadorAlarma = null;
         let heartbeatInterval = null;
-        let currentTab = 'chat';
+       let currentTab = 'chat';
+        let chatCanalActivo = 'general';
 
         const mainGrid = document.getElementById('main-grid');
         const panelTareas = document.getElementById('panel-tareas');
@@ -493,6 +494,25 @@
             panelTareas.querySelector('#badge-equipo').innerText = equipoActual;
             
             if (tareaEnfocadaId) panelTareas.querySelector('#banner-enfoque').style.display = 'flex';
+            // Configurar botones de chat dinámicos
+            const btnChatGral = document.getElementById('btn-canal-gral');
+            const btnChatEq = document.getElementById('btn-canal-eq');
+            
+            btnChatEq.innerText = equipoActual.toUpperCase(); // Renombra el botón
+
+            // Lógica de cambio de canal visual y funcional
+            btnChatGral.onclick = () => {
+                chatCanalActivo = 'general';
+                btnChatGral.style.background = 'var(--primary)'; btnChatGral.style.color = 'white';
+                btnChatEq.style.background = 'transparent'; btnChatEq.style.color = 'var(--secondary)';
+                renderChat();
+            };
+            btnChatEq.onclick = () => {
+                chatCanalActivo = 'equipo';
+                btnChatEq.style.background = 'var(--primary)'; btnChatEq.style.color = 'white';
+                btnChatGral.style.background = 'transparent'; btnChatGral.style.color = 'var(--secondary)';
+                renderChat();
+            };
             if (esSupervisorGlobal) panelUtilidades.querySelector('#btn-tab-equipo').style.display = 'flex';
             if (esAdminGlobal) tabHistorial.querySelector('#btn-limpiar-historial').style.display = 'inline-flex';
             if (!esAdminGlobal) tabEquipo.querySelector('#admin-top-actions').style.display = 'none';
@@ -1028,8 +1048,16 @@
             const inputNuevoMensaje = tabChat.querySelector('#nuevo-mensaje');
             const btnEnviarMsg = tabChat.querySelector('#btn-enviar-msg');
 
-            async function renderChat(rt = false) {
-                let { data: m } = await db.from('mensajes').select('*').order('created_at', { ascending: false }).limit(50);
+async function renderChat(rt = false) {
+                let query = db.from('mensajes').select('*');
+                
+                if (chatCanalActivo === 'general') {
+                    query = query.eq('canal', 'general');
+                } else {
+                    query = query.eq('canal', 'equipo').eq('equipo_destino', equipoActual);
+                }
+                
+                let { data: m } = await query.order('created_at', { ascending: false }).limit(50);
                 if (!m) return;
                 listaMensajes.innerHTML = '';
                 if (rt && m.length > 0 && m[0].usuario.toLowerCase() !== nombreActual) { 
@@ -1045,10 +1073,15 @@
                 listaMensajes.scrollTop = listaMensajes.scrollHeight;
                 aplicarFiltroGlobal();
             }
-            const createM = async () => { 
+const createM = async () => { 
                 const tx = inputNuevoMensaje.value.trim(); 
                 if(tx) { 
-                    await db.from('mensajes').insert([{ usuario: nombreActual, texto: tx }]); 
+                    await db.from('mensajes').insert([{ 
+                        usuario: nombreActual, 
+                        texto: tx,
+                        canal: chatCanalActivo,
+                        equipo_destino: chatCanalActivo === 'equipo' ? equipoActual : null
+                    }]); 
                     inputNuevoMensaje.value = ''; 
                     await db.from('usuarios').update({ ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual); 
                     renderChat(); 
