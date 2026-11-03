@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oficina Virtual v4.0</title>
+    <title>Oficina Virtual v4.0.1</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -68,8 +68,9 @@
         .input-group { display: flex; gap: 6px; margin-bottom: 8px; align-items: flex-start; flex-shrink: 0; }
         textarea.task-input { flex-grow: 1; padding: 7px 10px; border-radius: 4px; border: 1px solid var(--border); font-size: 13px; outline: none; resize: vertical; min-height: 35px; max-height: 90px; font-family: inherit; }
         input[type="text"], input[type="datetime-local"], select { padding: 6px 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 12px; outline: none; background: white; height: 34px; }
-        .prio-input { width: 78px; color: var(--secondary); cursor: pointer; }
-        .datetime-input { width: 142px; color: var(--secondary); }
+        .prio-input { width: 78px; color: var(--secondary); cursor: pointer; flex-shrink: 0; }
+        /* Ancho ampliado para que se vean todos los dígitos de fecha y hora (--:--) sin cortarse */
+        .datetime-input { width: 178px; min-width: 175px; color: var(--secondary); flex-shrink: 0; }
         
         .btn-accion { background: var(--primary); color: white; border: none; cursor: pointer; border-radius: 4px; padding: 0 12px; font-weight: 500; font-size: 12px; height: 34px; flex-shrink: 0; }
         
@@ -95,8 +96,8 @@
         .action-box { display: none; flex-direction: column; gap: 6px; margin-top: 6px; background: #f8fafc; padding: 8px; border-radius: 4px; border: 1px solid var(--border); }
         .action-box.inline { flex-direction: row; align-items: center; }
         .action-input { flex-grow: 1; padding: 5px 8px !important; font-size: 12px !important; }
+        .action-box input[type="datetime-local"] { min-width: 175px; }
         
-        /* Barra lateral derecha visible y con auto-cierre en 3s */
         .complete-bar { width: 22px; background: #dcebfb; border-left: 1px solid #b6d4fe; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.2s; margin-left: 8px; }
         .complete-bar:hover { background: #b6d4fe; }
         .complete-bar::after { content: '▶'; color: var(--primary); font-size: 10px; font-weight: bold; }
@@ -181,11 +182,10 @@
                     <div class="top-controls">
                         <button id="btn-mute" class="btn-txt-sm" title="Sonido">🔊</button>
                         <button id="btn-pip" class="btn-txt-sm" style="color: var(--prio-3); border-color: var(--prio-3);">⇲ Flotante</button>
-                        <span class="version-badge">v4.0</span>
+                        <span class="version-badge">v4.0.1</span>
                     </div>
                 </div>
 
-                <!-- Buscador Global presente en Web y Flotante -->
                 <input type="text" id="buscador-global" class="search-bar" placeholder="🔍 Buscar tareas, notas, chat...">
 
                 <div class="pip-nav" id="pip-nav">
@@ -290,7 +290,6 @@
                         </div>
                     </div>
 
-                    <!-- Caja inline para Crear Usuario -->
                     <div id="box-nuevo-usuario" class="action-box" style="margin-bottom:10px; flex-shrink:0;">
                         <div style="display:flex; gap:5px; flex-wrap:wrap;">
                             <input type="text" id="nu-nombre" placeholder="Usuario" style="flex:1; min-width:80px; height:28px;">
@@ -346,22 +345,25 @@
         const tabHistorial = document.getElementById('tab-historial');
         const tabEquipo = document.getElementById('tab-equipo');
 
-        // Helper Universal de Doble Check (3 segundos)
+        // Helper Universal de Doble Check (Restaura siempre el texto original al confirmar o expirar)
         function pedirConfirmacion(btn, textoConfirmar, accion) {
             if (!btn.dataset.confirming) {
                 btn.dataset.confirming = 'true';
-                const textoOriginal = btn.innerText;
+                btn.dataset.origText = btn.innerText;
                 btn.innerText = textoConfirmar;
                 btn.classList.add('confirm-state');
-                setTimeout(() => {
+                if (btn._confTimer) clearTimeout(btn._confTimer);
+                btn._confTimer = setTimeout(() => {
                     if (btn && btn.dataset.confirming) {
                         btn.dataset.confirming = '';
-                        btn.innerText = textoOriginal;
+                        btn.innerText = btn.dataset.origText;
                         btn.classList.remove('confirm-state');
                     }
                 }, 3000);
             } else {
+                if (btn._confTimer) clearTimeout(btn._confTimer);
                 btn.dataset.confirming = '';
+                btn.innerText = btn.dataset.origText || btn.innerText;
                 btn.classList.remove('confirm-state');
                 accion();
             }
@@ -384,7 +386,6 @@
             e.currentTarget.innerText = sonidoActivado ? '🔊' : '🔇';
         };
 
-        // Buscador Global (Filtra Tareas, Notas, Chat, Historial y Delegadas tanto en Web como en Flotante)
         function aplicarFiltroGlobal() {
             const term = panelTareas.querySelector('#buscador-global').value.toLowerCase();
             document.querySelectorAll('.task-item, .mensaje, .equipo-card').forEach(el => {
@@ -425,7 +426,6 @@
         }
 
         function generarOpcionesUsuariosHtml(excluirNombre) {
-            // Ordena poniendo primero a los compañeros del mismo equipo
             const ordenados = [...cacheUsuarios].filter(u => u.nombre !== excluirNombre).sort((a, b) => {
                 const eqA = (a.equipo || 'General') === equipoActual ? 0 : 1;
                 const eqB = (b.equipo || 'General') === equipoActual ? 0 : 1;
@@ -533,7 +533,7 @@
 
         btnPip.onclick = async () => {
             if (!('documentPictureInPicture' in window)) return alert("Navegador no compatible.");
-            const pip = await documentPictureInPicture.requestWindow({ width: 430, height: 620 });
+            const pip = await documentPictureInPicture.requestWindow({ width: 440, height: 620 });
             pip.document.body.classList.add('pip-mode');
             document.querySelectorAll('style').forEach(s => pip.document.head.appendChild(s.cloneNode(true)));
             
@@ -655,13 +655,11 @@
                                 ${infoBtn}
                             </div>
                             
-                            <!-- Delegar con Desplegable y Doble Check -->
                             <div class="action-box box-trans inline">
                                 <select class="action-input select-trans">${generarOpcionesUsuariosHtml(nombreActual)}</select>
                                 <button class="btn-txt-sm btn-ok-trans">Delegar</button>
                             </div>
                             
-                            <!-- Editar Texto + Fecha/Hora -->
                             <div class="action-box box-edit">
                                 <textarea class="action-input input-edit" style="resize:vertical; min-height:38px;">${item.texto}</textarea>
                                 <div style="display:flex; gap:6px;">
@@ -672,7 +670,6 @@
 
                             <div class="updates-list">${histHtml}</div>
                             
-                            <!-- Actualizar conciso -->
                             <div class="action-box box-update">
                                 <textarea class="action-input input-upd-texto" placeholder="Actualizar..." style="resize:vertical; min-height:38px; border-color:var(--accent);"></textarea>
                                 <div style="display:flex; gap:6px;">
@@ -681,7 +678,6 @@
                                 </div>
                             </div>
 
-                            <!-- Finalizar con Añadir Comentario y Doble Check -->
                             <div class="action-box box-finish">
                                 <input type="text" class="action-input input-fin-comentario" placeholder="Añadir comentario">
                                 <button class="btn-txt-sm btn-confirm-fin" style="align-self:flex-end; color:var(--prio-3); border-color:var(--prio-3);">Completar</button>
@@ -728,7 +724,6 @@
 
                     const hideBoxes = () => { div.querySelectorAll('.action-box').forEach(b => b.style.display = 'none'); };
 
-                    // Delegar con Desplegable y Doble Check
                     const bTrans = div.querySelector('.box-trans');
                     const sTrans = div.querySelector('.select-trans');
                     const btnOkTrans = div.querySelector('.btn-ok-trans');
@@ -750,7 +745,6 @@
                         });
                     };
 
-                    // Editar Texto + Fecha/Hora
                     const bEdit = div.querySelector('.box-edit');
                     div.querySelector('.edit-btn').onclick = () => { const vis = bEdit.style.display === 'flex'; hideBoxes(); if(!vis) bEdit.style.display = 'flex'; };
                     div.querySelector('.btn-ok-edit').onclick = async () => {
@@ -763,7 +757,6 @@
                         renderTareas();
                     };
 
-                    // MENÚ LATERAL CON AUTO-OCULTAMIENTO EN 3 SEGUNDOS
                     const cBar = div.querySelector('.complete-bar'); 
                     const rMenu = div.querySelector('.resolve-menu');
                     let menuTimer = null;
@@ -785,7 +778,6 @@
                         }, 3000);
                     };
 
-                    // Opción 1: Actualizar
                     const bUpd = div.querySelector('.box-update');
                     div.querySelector('.actualizar').onclick = () => { 
                         if (menuTimer) clearTimeout(menuTimer);
@@ -808,7 +800,6 @@
                         renderTareas(); renderDelegadas(); if(esSupervisorGlobal) cargarMetrics();
                     };
 
-                    // Opción 2: Finalizar (abre caja de comentario breve y exige doble check)
                     const bFin = div.querySelector('.box-finish');
                     const btnConfirmFin = div.querySelector('.btn-confirm-fin');
                     div.querySelector('.finalizar').onclick = () => {
@@ -845,7 +836,7 @@
                 aplicarFiltroGlobal();
             }
 
-            // PESTAÑA DELEGADAS (Seguimiento en vivo y alerta cuando el ATC/compañero completa)
+            // PESTAÑA DELEGADAS
             const listaDelegadas = tabDelegadas.querySelector('#lista-delegadas');
             const btnLimpiarDelegadas = tabDelegadas.querySelector('#btn-limpiar-delegadas');
 
@@ -866,7 +857,6 @@
                 }
 
                 dTasks.forEach(t => {
-                    // Detectar si un ATC acaba de completar una tarea delegada por mí
                     if (vieneDeRealtime && estadoDelegadasPrevio[t.id] === false && t.completada === true) {
                         emitirAlerta();
                         panelUtilidades.querySelector('#dot-delegadas').style.display = 'block';
@@ -909,7 +899,6 @@
                 aplicarFiltroGlobal();
             }
 
-            // Limpiar pestaña Delegadas (Solo oculta de la vista, no borra de la BD ni del Excel)
             btnLimpiarDelegadas.onclick = () => {
                 pedirConfirmacion(btnLimpiarDelegadas, '¿Confirmar?', async () => {
                     await db.from('tareas')
@@ -990,7 +979,7 @@
             btnAddNota.onclick = createN;
             inputNuevaNota.onkeydown = (e) => { if(e.key === 'Enter') { e.preventDefault(); createN(); } };
 
-            // HISTORIAL, EXPORTAR EXCEL (TODOS) Y VACIAR (SOLO ADMIN)
+            // HISTORIAL, EXPORTAR EXCEL Y VACIAR
             const listaHistorial = tabHistorial.querySelector('#lista-historial');
             const btnLimpiarHistorial = tabHistorial.querySelector('#btn-limpiar-historial');
             const btnExportarCsv = tabHistorial.querySelector('#btn-exportar-csv');
@@ -1008,7 +997,6 @@
                 aplicarFiltroGlobal();
             }
 
-            // Exportar histórico personal a Excel (CSV compatible con UTF-8 BOM)
             btnExportarCsv.onclick = async () => {
                 let { data } = await db.from('tareas').select('*').ilike('asignado_a', nombreActual).order('created_at', { ascending: false });
                 if (!data || !data.length) return alert("Sin datos para exportar.");
@@ -1170,7 +1158,6 @@
                             <div>📋 Carga: <b>${pendientes.length}</b> (🔴 ${p1} urgentes | ⏭️ ${aFuturo} futuro) ${vencidas > 0 ? `<span style="color:var(--danger); font-weight:bold;">• ⚠️ ${vencidas} vencidas</span>` : ''}</div>
                         </div>
                         
-                        <!-- Caja para editar Rol y Equipo (Solo Admin) -->
                         <div class="action-box box-cfg-user inline" style="display:none;">
                             <select class="action-input edit-u-rol">
                                 <option value="ATC" ${uRol==='ATC'?'selected':''}>ATC</option>
@@ -1215,7 +1202,6 @@
                         }
                     }
 
-                    // Inspeccionar y modificar tareas del usuario con Desplegable y Doble Check
                     const inspBtn = div.querySelector('.insp-btn');
                     const supBox = div.querySelector('.supervisor-tasks-box');
                     inspBtn.onclick = () => {
