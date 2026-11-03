@@ -31,8 +31,8 @@
 
         .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; height: 100%; overflow: hidden; }
         
-        .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; flex-shrink: 0; flex-wrap: wrap; gap: 8px;}
-        .header-title { font-size: 13px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;}
+        .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; flex-shrink: 0; flex-wrap: wrap; gap: 8px; }
+        .header-title { font-size: 13px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         .role-tag { font-size: 10px; background: #eef2f5; color: var(--primary); padding: 2px 6px; border-radius: 3px; font-weight: 600; }
         
         .top-controls { display: flex; gap: 6px; align-items: center; }
@@ -117,9 +117,6 @@
         .mensaje { margin-bottom: 8px; font-size: 12px; line-height: 1.4; padding: 7px 9px; background: #f8fafc; border-radius: 5px; }
         .msg-usuario { font-size: 10px; font-weight: 600; color: var(--secondary); margin-bottom: 2px; text-transform: uppercase; }
         .msg-texto { color: #333; white-space: pre-wrap; word-break: break-word; }
-        /* Mensajes directos */
-        .mensaje.dm { border-left: 3px solid var(--prio-2); background: #fef9e7; }
-        .mensaje.dm-sent { border-left: 3px solid var(--accent); }
 
         .equipo-card { flex-direction: column; padding: 10px 0; border-bottom: 1px solid var(--border); }
         .equipo-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 4px; }
@@ -145,13 +142,15 @@
         /* --- RESPONSIVIDAD MÓVIL --- */
         @media (max-width: 768px) {
             body { padding: 8px; }
-            #app-container { height: auto; display: flex; flex-direction: column; }
-            .grid-layout { display: flex; flex-direction: column; gap: 10px; height: auto; }
-            .panel { height: auto; min-height: 400px; max-height: 80vh; }
-            #btn-pip { display: none; } /* Ocultar botón PiP en móviles nativos */
+            #app-container { height: auto; }
+            .grid-layout { display: flex; flex-direction: column; gap: 12px; height: auto; }
+            .panel { height: auto; min-height: 420px; max-height: 82vh; }
+            #btn-pip { display: none !important; }
             .tabs { overflow-x: auto; flex-wrap: nowrap; }
-            .action-box.inline { flex-direction: column; align-items: stretch; }
-            .action-box.inline button { align-self: flex-end; }
+            .input-group { flex-wrap: wrap; }
+            .datetime-input { flex: 1; min-width: 160px; }
+            .prio-input { width: 90px; }
+            #btn-add-tarea { width: 100%; margin-top: 4px; }
         }
     </style>
 </head>
@@ -253,20 +252,13 @@
                     <button class="tab-btn" id="btn-tab-equipo" style="display: none; color: var(--danger);">EQUIPO</button>
                 </div>
 
-                <!-- CHAT (Soporta Canales y DM) -->
+                <!-- CHAT (Solo General y Equipo en Tiempo Real) -->
                 <div id="tab-chat" class="contenido-tab active">
-                    <div style="display:flex; gap:6px; margin-bottom:8px;">
-                        <button id="btn-canal-gral" class="btn-txt-sm" style="flex:1; background:var(--primary); color:white;">General</button>
-                        <button id="btn-canal-eq" class="btn-txt-sm" style="flex:1;">Equipo</button>
-                        <button id="btn-canal-dm" class="btn-txt-sm" style="flex:1;">Personal</button>
+                    <div style="display:flex; gap:6px; margin-bottom:8px; flex-shrink:0;">
+                        <button id="btn-canal-gral" class="btn-txt-sm" style="flex:1; background:var(--primary); color:white;">General <div class="dot-indicator" id="dot-sub-gral"></div></button>
+                        <button id="btn-canal-eq" class="btn-txt-sm" style="flex:1;">Equipo <div class="dot-indicator" id="dot-sub-eq"></div></button>
                     </div>
                     <div id="lista-mensajes" style="flex-grow: 1; overflow-y: auto; margin-bottom: 8px;"></div>
-                    
-                    <div class="input-group" id="dm-select-wrapper" style="display: none; margin-bottom:4px;">
-                        <select id="chat-dm-dest" style="width: 100%;">
-                            <option value="">Seleccionar destinatario...</option>
-                        </select>
-                    </div>
                     <div class="input-group" style="margin-bottom: 0;">
                         <textarea id="nuevo-mensaje" class="task-input" placeholder="Mensaje..." style="min-height:34px; height:34px;"></textarea>
                         <button class="btn-accion" id="btn-enviar-msg">Enviar</button>
@@ -359,6 +351,8 @@
         let tareasAlertadas = new Set(); 
         let temporizadorAlarma = null;
         let heartbeatInterval = null;
+        let supervisorPollInterval = null;
+        let syncChannel = null;
         let currentTab = 'chat';
         let chatCanalActivo = 'general';
 
@@ -371,7 +365,6 @@
         const tabHistorial = document.getElementById('tab-historial');
         const tabEquipo = document.getElementById('tab-equipo');
 
-        // Helper Universal de Doble Check
         function pedirConfirmacion(btn, textoConfirmar, accion) {
             if (!btn.dataset.confirming) {
                 btn.dataset.confirming = 'true';
@@ -440,7 +433,6 @@
             if (data) {
                 cacheUsuarios = data;
                 actualizarSelectFiltroEquipos();
-                actualizarSelectDestinatariosDM();
             }
         }
 
@@ -460,21 +452,19 @@
             });
             return `<option value="">Seleccionar usuario...</option>` + ordenados.map(u => `<option value="${u.nombre}">${u.nombre.toUpperCase()} (${u.rol || 'ATC'} • ${u.equipo || 'General'})</option>`).join('');
         }
-        
-        function actualizarSelectDestinatariosDM() {
-             const sel = document.getElementById('chat-dm-dest');
-             if(sel) {
-                 const current = sel.value;
-                 sel.innerHTML = generarOpcionesUsuariosHtml(nombreActual);
-                 sel.value = current;
-             }
+
+        // Notificación instantánea de cambios de Enfoque / Estado hacia todos los supervisores conectados
+        function notificarCambioEnVivo() {
+            if (syncChannel) {
+                syncChannel.send({ type: 'broadcast', event: 'estado_actualizado', payload: { usr: nombreActual } });
+            }
         }
 
         function iniciarHeartbeat() {
             if(heartbeatInterval) clearInterval(heartbeatInterval);
             heartbeatInterval = setInterval(async () => {
                 if(nombreActual) await db.from('usuarios').update({ online_at: new Date().toISOString() }).eq('nombre', nombreActual);
-            }, 30000);
+            }, 25000);
         }
 
         // AUTENTICACIÓN
@@ -513,7 +503,7 @@
 
             nombreActual = usr;
             rolActual = u.rol || (u.es_admin ? 'Admin' : 'ATC');
-            equipoActual = u.equipo || 'General';
+            equipoActual = (u.equipo || 'General').trim();
             esAdminGlobal = (rolActual === 'Admin' || u.es_admin === true);
             esSupervisorGlobal = (esAdminGlobal || rolActual === 'Supervisor');
             tareaEnfocadaId = u.tarea_enfocada || null;
@@ -525,29 +515,6 @@
             panelTareas.querySelector('#badge-equipo').innerText = equipoActual;
             
             if (tareaEnfocadaId) panelTareas.querySelector('#banner-enfoque').style.display = 'flex';
-            
-            // Canales de Chat Configuración Inicial
-            const btnChatGral = document.getElementById('btn-canal-gral');
-            const btnChatEq = document.getElementById('btn-canal-eq');
-            const btnChatDm = document.getElementById('btn-canal-dm');
-            const dmSelectWrap = document.getElementById('dm-select-wrapper');
-            
-            btnChatEq.innerText = equipoActual.toUpperCase();
-
-            function setChatTab(canal, btnActivo) {
-                chatCanalActivo = canal;
-                [btnChatGral, btnChatEq, btnChatDm].forEach(b => { b.style.background = 'transparent'; b.style.color = 'var(--secondary)'; });
-                btnActivo.style.background = 'var(--primary)'; btnActivo.style.color = 'white';
-                dmSelectWrap.style.display = canal === 'personal' ? 'flex' : 'none';
-                renderChat();
-            }
-
-            btnChatGral.onclick = () => setChatTab('general', btnChatGral);
-            btnChatEq.onclick = () => setChatTab('equipo', btnChatEq);
-            btnChatDm.onclick = () => setChatTab('personal', btnChatDm);
-            
-            document.getElementById('chat-dm-dest').onchange = () => renderChat();
-
             if (esSupervisorGlobal) panelUtilidades.querySelector('#btn-tab-equipo').style.display = 'flex';
             if (esAdminGlobal) tabHistorial.querySelector('#btn-limpiar-historial').style.display = 'inline-flex';
             if (!esAdminGlobal) tabEquipo.querySelector('#admin-top-actions').style.display = 'none';
@@ -629,7 +596,32 @@
         };
 
         function iniciarApp() {
-            // Manejo de las pestañas en vista principal
+            // Configurar botones de canal de Chat (General y Equipo)
+            const btnChatGral = tabChat.querySelector('#btn-canal-gral');
+            const btnChatEq = tabChat.querySelector('#btn-canal-eq');
+            const dotSubGral = tabChat.querySelector('#dot-sub-gral');
+            const dotSubEq = tabChat.querySelector('#dot-sub-eq');
+
+            btnChatEq.innerHTML = `${equipoActual.toUpperCase()} <div class="dot-indicator" id="dot-sub-eq"></div>`;
+
+            btnChatGral.onclick = () => {
+                chatCanalActivo = 'general';
+                btnChatGral.style.background = 'var(--primary)'; btnChatGral.style.color = 'white';
+                btnChatEq.style.background = 'transparent'; btnChatEq.style.color = 'var(--secondary)';
+                dotSubGral.style.display = 'none';
+                renderChat();
+            };
+
+            btnChatEq.onclick = () => {
+                chatCanalActivo = 'equipo';
+                btnChatEq.style.background = 'var(--primary)'; btnChatEq.style.color = 'white';
+                btnChatGral.style.background = 'transparent'; btnChatGral.style.color = 'var(--secondary)';
+                const dEq = btnChatEq.querySelector('#dot-sub-eq');
+                if (dEq) dEq.style.display = 'none';
+                renderChat();
+            };
+
+            // Pestañas principales del panel derecho
             ['chat', 'notas', 'delegadas', 'historial', 'equipo'].forEach(p => {
                 const b = panelUtilidades.querySelector(`#btn-tab-${p}`);
                 if(b) b.onclick = () => {
@@ -772,11 +764,15 @@
                         renderTareas(); 
                     };
                     
+                    // Activar Modo Enfoque con transmisión inmediata al Panel de Equipo
                     div.querySelector('.focus-btn').onclick = async () => { 
                         tareaEnfocadaId = item.id; 
                         panelTareas.querySelector('#banner-enfoque').style.display = 'flex'; 
-                        await db.from('usuarios').update({ tarea_enfocada: item.id, ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual); 
-                        renderTareas(); if(esSupervisorGlobal) cargarMetrics();
+                        const nowIso = new Date().toISOString();
+                        await db.from('usuarios').update({ tarea_enfocada: item.id, ultima_actividad: nowIso, online_at: nowIso }).eq('nombre', nombreActual); 
+                        notificarCambioEnVivo();
+                        renderTareas(); 
+                        if(esSupervisorGlobal) cargarMetrics();
                     };
                     
                     const btnInfo = div.querySelector('.info-btn');
@@ -857,6 +853,7 @@
 
                         await db.from('tareas').update(updateObj).eq('id', item.id);
                         await db.from('usuarios').update({ ultima_actividad: nowIso }).eq('nombre', nombreActual);
+                        notificarCambioEnVivo();
                         renderTareas(); renderDelegadas(); if(esSupervisorGlobal) cargarMetrics();
                     };
 
@@ -883,6 +880,7 @@
                                 comentario_cierre: com || null
                             }).eq('id', item.id);
                             await db.from('usuarios').update({ ultima_actividad: nowIso }).eq('nombre', nombreActual);
+                            notificarCambioEnVivo();
                             renderTareas(); renderHistorial(); renderDelegadas();
                             if(esSupervisorGlobal) cargarMetrics();
                         });
@@ -982,10 +980,14 @@
             }
             if(temporizadorAlarma) clearInterval(temporizadorAlarma); temporizadorAlarma = setInterval(cronometro, 15000); 
 
+            // Salir de Modo Enfoque con transmisión inmediata
             panelTareas.querySelector('#banner-enfoque').onclick = async () => { 
                 tareaEnfocadaId = null; panelTareas.querySelector('#banner-enfoque').style.display = 'none'; 
-                await db.from('usuarios').update({ tarea_enfocada: null, ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual); 
-                renderTareas(); if(esSupervisorGlobal) cargarMetrics();
+                const nowIso = new Date().toISOString();
+                await db.from('usuarios').update({ tarea_enfocada: null, ultima_actividad: nowIso, online_at: nowIso }).eq('nombre', nombreActual); 
+                notificarCambioEnVivo();
+                renderTareas(); 
+                if(esSupervisorGlobal) cargarMetrics();
             };
             
             const inputNuevaTarea = panelTareas.querySelector('#nueva-tarea');
@@ -1080,28 +1082,18 @@
                 });
             }
 
-            // CHAT POR CANALES
+            // CHAT EN TIEMPO REAL (GENERAL Y EQUIPO)
             const listaMensajes = tabChat.querySelector('#lista-mensajes');
             const inputNuevoMensaje = tabChat.querySelector('#nuevo-mensaje');
             const btnEnviarMsg = tabChat.querySelector('#btn-enviar-msg');
-            const selectDM = document.getElementById('chat-dm-dest');
 
-            async function renderChat(rt = false) {
+            async function renderChat() {
                 let query = db.from('mensajes').select('*');
                 
                 if (chatCanalActivo === 'general') {
-                    query = query.eq('canal', 'general');
-                } else if (chatCanalActivo === 'equipo') {
-                    query = query.eq('canal', 'equipo').eq('equipo_destino', equipoActual);
-                } else if (chatCanalActivo === 'personal') {
-                    const targetUser = selectDM.value;
-                    if (!targetUser) {
-                        listaMensajes.innerHTML = `<div style="font-size:12px; color:var(--secondary); padding: 10px;">Selecciona un usuario arriba para ver los mensajes.</div>`;
-                        return;
-                    }
-                    // Buscar mensajes donde soy origen o destino con ese usuario específico
-                    query = query.eq('canal', 'personal')
-                                 .or(`and(usuario.ilike.${nombreActual},usuario_destino.ilike.${targetUser}),and(usuario.ilike.${targetUser},usuario_destino.ilike.${nombreActual})`);
+                    query = query.or('canal.eq.general,canal.is.null');
+                } else {
+                    query = query.eq('canal', 'equipo').ilike('equipo_destino', equipoActual);
                 }
                 
                 let { data: m } = await query.order('created_at', { ascending: false }).limit(50);
@@ -1109,22 +1101,12 @@
                 
                 listaMensajes.innerHTML = '';
                 if (!m.length) {
-                    listaMensajes.innerHTML = `<div style="font-size:12px; color:var(--secondary); padding: 10px;">Sin mensajes.</div>`;
+                    listaMensajes.innerHTML = `<div style="font-size:12px; color:var(--secondary); padding: 10px;">Sin mensajes en este canal.</div>`;
+                    return;
                 }
 
-                if (rt && m.length > 0 && m[0].usuario.toLowerCase() !== nombreActual) { 
-                    emitirAlerta(); 
-                    if (!tabChat.classList.contains('active')) {
-                        panelUtilidades.querySelector('#dot-chat').style.display = 'block';
-                        panelTareas.querySelector('#dot-chat-pip').style.display = 'block';
-                    }
-                }
                 m.reverse().forEach(item => { 
-                    let extraClass = '';
-                    if (chatCanalActivo === 'personal') {
-                        extraClass = item.usuario.toLowerCase() === nombreActual ? 'dm dm-sent' : 'dm';
-                    }
-                    listaMensajes.innerHTML += `<div class="mensaje ${extraClass}"><div class="msg-usuario">${item.usuario}</div><div class="msg-texto">${linkify(item.texto)}</div></div>`; 
+                    listaMensajes.innerHTML += `<div class="mensaje"><div class="msg-usuario">${item.usuario}</div><div class="msg-texto">${linkify(item.texto)}</div></div>`; 
                 });
                 listaMensajes.scrollTop = listaMensajes.scrollHeight;
                 aplicarFiltroGlobal();
@@ -1133,20 +1115,12 @@
             const createM = async () => { 
                 const tx = inputNuevoMensaje.value.trim(); 
                 if(!tx) return;
-                
-                let dest = null;
-                if (chatCanalActivo === 'equipo') dest = equipoActual;
-                if (chatCanalActivo === 'personal') {
-                    dest = selectDM.value;
-                    if (!dest) return alert("Selecciona a quién enviar el mensaje personal.");
-                }
 
                 await db.from('mensajes').insert([{ 
                     usuario: nombreActual, 
                     texto: tx,
                     canal: chatCanalActivo,
-                    equipo_destino: chatCanalActivo === 'equipo' ? dest : null,
-                    usuario_destino: chatCanalActivo === 'personal' ? dest : null
+                    equipo_destino: chatCanalActivo === 'equipo' ? equipoActual : null
                 }]); 
                 
                 inputNuevoMensaje.value = ''; 
@@ -1156,7 +1130,7 @@
             btnEnviarMsg.onclick = createM;
             inputNuevoMensaje.onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); createM(); } };
 
-            // EQUIPO
+            // EQUIPO Y SUPERVISIÓN EN VIVO
             const btnLimpiarChat = tabEquipo.querySelector('#btn-limpiar-chat');
             const btnToggleCrearUsr = tabEquipo.querySelector('#btn-toggle-crear-usr');
             const boxNuevoUsuario = tabEquipo.querySelector('#box-nuevo-usuario');
@@ -1195,13 +1169,16 @@
             });
             
             async function cargarMetrics() {
+                // Si el supervisor tiene desplegada alguna caja de edición/inspección de usuario, no sobreescribir mientras interactúa
+                const cajaAbierta = Array.from(listaEquipo.querySelectorAll('.supervisor-tasks-box, .box-cfg-user')).some(el => el.style.display === 'block' || el.style.display === 'flex');
+                if (cajaAbierta) return;
+
                 let { data: users } = await db.from('usuarios').select('*').order('created_at', { ascending: true });
                 let { data: tasks } = await db.from('tareas').select('id, asignado_a, completada, prioridad, fecha_programada, fecha_completada, texto, actualizaciones');
                 if (!users || !tasks) return;
 
                 cacheUsuarios = users;
                 actualizarSelectFiltroEquipos();
-                actualizarSelectDestinatariosDM();
 
                 const filtroEq = selectFiltroEquipo.value;
                 const usuariosFiltrados = filtroEq === 'TODOS' ? users : users.filter(u => (u.equipo || 'General') === filtroEq);
@@ -1232,7 +1209,7 @@
                     const aFuturo = pendientes.filter(t => t.fecha_programada && new Date(t.fecha_programada) >= ahora).length;
                     
                     const ua = u.ultima_actividad ? formatFechaAbsoluta(u.ultima_actividad) : 'Sin registro';
-                    const tareaEnfObj = u.tarea_enfocada ? tasks.find(x => String(x.id) === String(u.tarea_enfocada) && !x.completada) : null;
+                    const tareaEnfObj = (u.tarea_enfocada !== null && u.tarea_enfocada !== undefined) ? tasks.find(x => String(x.id) === String(u.tarea_enfocada) && !x.completada) : null;
                     const enf = tareaEnfObj ? tareaEnfObj.texto : 'Ninguno';
 
                     const onlineTime = u.online_at ? new Date(u.online_at) : null;
@@ -1258,7 +1235,7 @@
                         </div>
                         <div style="font-size: 11px; color: var(--secondary); line-height: 1.5;">
                             <div>⏱️ Act: <span style="font-weight: bold; color: var(--primary);">${ua}</span> | 📈 Hoy: <span style="font-weight: bold; color: var(--primary);">${compHoy + hitosHoy}</span> (${compHoy} cerradas, ${hitosHoy} hitos)</div>
-                            <div style="color:${tareaEnfObj ? 'var(--prio-2)' : 'var(--secondary)'}; font-weight:600;">🎯 Enfoque: <span style="font-weight:normal; color:var(--primary);">${enf}</span></div>
+                            <div style="color:${tareaEnfObj ? 'var(--prio-2)' : 'var(--secondary)'}; font-weight:600;">🎯 Enfoque: <span style="font-weight:${tareaEnfObj ? '600' : 'normal'}; color:${tareaEnfObj ? 'var(--primary)' : 'var(--secondary)'};">${enf}</span></div>
                             <div>📋 Carga: <b>${pendientes.length}</b> (🔴 ${p1} urgentes | ⏭️ ${aFuturo} futuro) ${vencidas > 0 ? `<span style="color:var(--danger); font-weight:bold;">• ⚠️ ${vencidas} vencidas</span>` : ''}</div>
                         </div>
                         
@@ -1285,6 +1262,12 @@
                             const nr = div.querySelector('.edit-u-rol').value;
                             const ne = div.querySelector('.edit-u-eq').value.trim() || 'General';
                             await db.from('usuarios').update({ rol: nr, equipo: ne, es_admin: nr === 'Admin' }).eq('nombre', u.nombre);
+                            if (u.nombre === nombreActual) {
+                                equipoActual = ne;
+                                panelTareas.querySelector('#badge-equipo').innerText = equipoActual;
+                                btnChatEq.innerHTML = `${equipoActual.toUpperCase()} <div class="dot-indicator" id="dot-sub-eq"></div>`;
+                            }
+                            boxCfg.style.display = 'none';
                             await refrescarCacheUsuarios();
                             cargarMetrics();
                         };
@@ -1335,6 +1318,7 @@
                                         const nuevoDest = selMover.value;
                                         if(!nuevoDest) return alert("Elige destino.");
                                         pedirConfirmacion(btnMover, '¿Confirmar?', async () => {
+                                            supBox.style.display = 'none';
                                             await db.from('tareas').update({ 
                                                 asignado_a: nuevoDest, 
                                                 transferido_por: nombreActual, 
@@ -1347,6 +1331,7 @@
 
                                     const btnDelT = tRow.querySelector('.sup-del-task-btn');
                                     btnDelT.onclick = () => pedirConfirmacion(btnDelT, '¿Borrar?', async () => {
+                                        supBox.style.display = 'none';
                                         await db.from('tareas').delete().eq('id', pt.id);
                                         cargarMetrics(); renderTareas();
                                     });
@@ -1358,36 +1343,58 @@
                 aplicarFiltroGlobal();
             }
 
-            // Suscripciones Realtime Globales (Canales y DM)
+            // Suscripciones en Tiempo Real + Canal Broadcast para Enfoque Inmediato
+            syncChannel = db.channel('oficina_sync_live')
+                .on('broadcast', { event: 'estado_actualizado' }, () => {
+                    if (esSupervisorGlobal) cargarMetrics();
+                })
+                .subscribe();
+
             db.channel('public:tareas').on('postgres_changes', { event: '*', schema: 'public', table: 'tareas' }, () => { 
                 renderTareas(true); renderHistorial(); renderDelegadas(true); if(esSupervisorGlobal) cargarMetrics(); 
             }).subscribe();
+
             db.channel('public:usuarios').on('postgres_changes', { event: '*', schema: 'public', table: 'usuarios' }, () => { 
                 refrescarCacheUsuarios(); if(esSupervisorGlobal) cargarMetrics(); 
             }).subscribe();
-            db.channel('public:notas').on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => { renderNotas(); }).subscribe();
-            db.channel('public:mensajes').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, (payload) => { 
-                const m = payload.new;
-                // Si me mandaron un DM o es mi canal de equipo, aviso visual y sonoro si no estoy viendo ese chat
-                if (m.usuario.toLowerCase() !== nombreActual) {
-                    if (m.canal === 'personal' && m.usuario_destino === nombreActual) {
-                        emitirAlerta();
-                        if (chatCanalActivo !== 'personal' || document.getElementById('chat-dm-dest').value !== m.usuario) {
-                            panelUtilidades.querySelector('#dot-chat').style.display = 'block';
-                            panelTareas.querySelector('#dot-chat-pip').style.display = 'block';
-                            if (Notification.permission === "granted") new Notification(`💬 Mensaje privado de ${m.usuario}`, { body: m.texto });
-                        }
-                    } else if (m.canal === 'equipo' && m.equipo_destino === equipoActual) {
-                        if (chatCanalActivo !== 'equipo') {
-                            panelUtilidades.querySelector('#dot-chat').style.display = 'block';
-                            panelTareas.querySelector('#dot-chat-pip').style.display = 'block';
-                        }
-                    }
-                }
-                renderChat(true); 
+
+            db.channel('public:notas').on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => { 
+                renderNotas(); 
             }).subscribe();
 
-            renderTareas(); renderNotas(); renderHistorial(); renderDelegadas();
+            db.channel('public:mensajes').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, (payload) => { 
+                const m = payload.new;
+                const esMio = (m.usuario || '').toLowerCase() === nombreActual;
+                const esGeneral = !m.canal || m.canal === 'general';
+                const esDeMiEquipo = m.canal === 'equipo' && (m.equipo_destino || '').toLowerCase() === equipoActual.toLowerCase();
+
+                if (esGeneral || esDeMiEquipo) {
+                    if (!esMio) {
+                        emitirAlerta();
+                        if (!tabChat.classList.contains('active')) {
+                            panelUtilidades.querySelector('#dot-chat').style.display = 'block';
+                            panelTareas.querySelector('#dot-chat-pip').style.display = 'block';
+                        }
+                        if (esGeneral && chatCanalActivo !== 'general') {
+                            dotSubGral.style.display = 'block';
+                        } else if (esDeMiEquipo && chatCanalActivo !== 'equipo') {
+                            const dEq = btnChatEq.querySelector('#dot-sub-eq');
+                            if (dEq) dEq.style.display = 'block';
+                        }
+                    }
+                    renderChat();
+                }
+            }).subscribe();
+
+            // Respaldo de sincronización continua para el Panel de Equipo cada 8 segundos
+            if (esSupervisorGlobal) {
+                if (supervisorPollInterval) clearInterval(supervisorPollInterval);
+                supervisorPollInterval = setInterval(() => {
+                    if (tabEquipo.classList.contains('active')) cargarMetrics();
+                }, 8000);
+            }
+
+            renderTareas(); renderNotas(); renderChat(); renderHistorial(); renderDelegadas();
             if(esSupervisorGlobal) cargarMetrics();
         }
     </script>
