@@ -239,10 +239,14 @@
                     <button class="tab-btn" id="btn-tab-equipo" style="display: none; color: var(--danger);">EQUIPO</button>
                 </div>
 
-                <!-- CHAT -->
-                <div id="tab-chat" class="contenido-tab active">
-                    <div id="lista-mensajes" style="flex-grow: 1; overflow-y: auto; margin-bottom: 8px;"></div>
-                    <div class="input-group" style="margin-bottom: 0;">
+<!-- CHAT -->
+<div id="tab-chat" class="contenido-tab active">
+    <div style="display:flex; gap:6px; margin-bottom:8px;">
+        <button id="btn-canal-gral" class="btn-txt-sm" style="flex:1; background:var(--primary); color:white;">General</button>
+        <button id="btn-canal-eq" class="btn-txt-sm" style="flex:1;">Equipo</button>
+    </div>
+    <div id="lista-mensajes" style="flex-grow: 1; overflow-y: auto; margin-bottom: 8px;"></div>
+    <div class="input-group" style="margin-bottom: 0;">
                         <textarea id="nuevo-mensaje" class="task-input" placeholder="Mensaje..." style="min-height:34px; height:34px;"></textarea>
                         <button class="btn-accion" id="btn-enviar-msg">Enviar</button>
                     </div>
