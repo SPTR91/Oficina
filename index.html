@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oficina Virtual v4.0.1</title>
+    <title>Oficina Virtual v4.1</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -25,20 +25,20 @@
         .btn-main { padding: 10px 16px; background-color: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s; }
         .btn-main:hover { background-color: #1a252f; }
         
-        #app-container { display: none; max-width: 1240px; margin: 0 auto; }
-        .grid-layout { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 18px; align-items: stretch; height: 90vh; }
+        #app-container { display: none; max-width: 1240px; margin: 0 auto; height: 92vh; }
+        .grid-layout { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 18px; align-items: stretch; height: 100%; }
         .grid-layout.pip-active { grid-template-columns: 1fr; }
 
         .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; height: 100%; overflow: hidden; }
         
-        .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; flex-shrink: 0; }
-        .header-title { font-size: 13px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+        .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; flex-shrink: 0; flex-wrap: wrap; gap: 8px;}
+        .header-title { font-size: 13px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;}
         .role-tag { font-size: 10px; background: #eef2f5; color: var(--primary); padding: 2px 6px; border-radius: 3px; font-weight: 600; }
         
         .top-controls { display: flex; gap: 6px; align-items: center; }
         .version-badge { font-size: 10px; background: var(--primary); color: white; padding: 3px 6px; border-radius: 4px; font-weight: 600; letter-spacing: 0.5px; }
         
-        .btn-txt-sm { background: none; border: 1px solid var(--border); color: var(--secondary); border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px; }
+        .btn-txt-sm { background: none; border: 1px solid var(--border); color: var(--secondary); border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
         .btn-txt-sm:hover { border-color: var(--primary); color: var(--primary); }
         .btn-txt-sm.confirm-state { background: #fdf2f2 !important; border-color: var(--danger) !important; color: var(--danger) !important; font-weight: 600; }
 
@@ -69,7 +69,6 @@
         textarea.task-input { flex-grow: 1; padding: 7px 10px; border-radius: 4px; border: 1px solid var(--border); font-size: 13px; outline: none; resize: vertical; min-height: 35px; max-height: 90px; font-family: inherit; }
         input[type="text"], input[type="datetime-local"], select { padding: 6px 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 12px; outline: none; background: white; height: 34px; }
         .prio-input { width: 78px; color: var(--secondary); cursor: pointer; flex-shrink: 0; }
-        /* Ancho ampliado para que se vean todos los dígitos de fecha y hora (--:--) sin cortarse */
         .datetime-input { width: 178px; min-width: 175px; color: var(--secondary); flex-shrink: 0; }
         
         .btn-accion { background: var(--primary); color: white; border: none; cursor: pointer; border-radius: 4px; padding: 0 12px; font-weight: 500; font-size: 12px; height: 34px; flex-shrink: 0; }
@@ -94,7 +93,7 @@
         .action-link:hover { color: var(--primary); }
         
         .action-box { display: none; flex-direction: column; gap: 6px; margin-top: 6px; background: #f8fafc; padding: 8px; border-radius: 4px; border: 1px solid var(--border); }
-        .action-box.inline { flex-direction: row; align-items: center; }
+        .action-box.inline { flex-direction: row; align-items: center; flex-wrap: wrap; }
         .action-input { flex-grow: 1; padding: 5px 8px !important; font-size: 12px !important; }
         .action-box input[type="datetime-local"] { min-width: 175px; }
         
@@ -118,6 +117,9 @@
         .mensaje { margin-bottom: 8px; font-size: 12px; line-height: 1.4; padding: 7px 9px; background: #f8fafc; border-radius: 5px; }
         .msg-usuario { font-size: 10px; font-weight: 600; color: var(--secondary); margin-bottom: 2px; text-transform: uppercase; }
         .msg-texto { color: #333; white-space: pre-wrap; word-break: break-word; }
+        /* Mensajes directos */
+        .mensaje.dm { border-left: 3px solid var(--prio-2); background: #fef9e7; }
+        .mensaje.dm-sent { border-left: 3px solid var(--accent); }
 
         .equipo-card { flex-direction: column; padding: 10px 0; border-bottom: 1px solid var(--border); }
         .equipo-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 4px; }
@@ -139,6 +141,18 @@
         .auth-label { display: block; font-size: 11px; font-weight: 600; color: var(--secondary); margin-bottom: 4px; text-transform: uppercase; }
         .auth-input { width: 100%; margin-bottom: 14px; padding: 9px; border-radius: 4px; border: 1px solid var(--border); font-size: 13px; outline: none; }
         .auth-link { color: var(--accent); text-decoration: none; font-size: 12px; font-weight: 500; }
+
+        /* --- RESPONSIVIDAD MÓVIL --- */
+        @media (max-width: 768px) {
+            body { padding: 8px; }
+            #app-container { height: auto; display: flex; flex-direction: column; }
+            .grid-layout { display: flex; flex-direction: column; gap: 10px; height: auto; }
+            .panel { height: auto; min-height: 400px; max-height: 80vh; }
+            #btn-pip { display: none; } /* Ocultar botón PiP en móviles nativos */
+            .tabs { overflow-x: auto; flex-wrap: nowrap; }
+            .action-box.inline { flex-direction: column; align-items: stretch; }
+            .action-box.inline button { align-self: flex-end; }
+        }
     </style>
 </head>
 <body>
@@ -182,7 +196,7 @@
                     <div class="top-controls">
                         <button id="btn-mute" class="btn-txt-sm" title="Sonido">🔊</button>
                         <button id="btn-pip" class="btn-txt-sm" style="color: var(--prio-3); border-color: var(--prio-3);">⇲ Flotante</button>
-                        <span class="version-badge">v4.0.1</span>
+                        <span class="version-badge">v4.1</span>
                     </div>
                 </div>
 
@@ -239,14 +253,21 @@
                     <button class="tab-btn" id="btn-tab-equipo" style="display: none; color: var(--danger);">EQUIPO</button>
                 </div>
 
-<!-- CHAT -->
-<div id="tab-chat" class="contenido-tab active">
-    <div style="display:flex; gap:6px; margin-bottom:8px;">
-        <button id="btn-canal-gral" class="btn-txt-sm" style="flex:1; background:var(--primary); color:white;">General</button>
-        <button id="btn-canal-eq" class="btn-txt-sm" style="flex:1;">Equipo</button>
-    </div>
-    <div id="lista-mensajes" style="flex-grow: 1; overflow-y: auto; margin-bottom: 8px;"></div>
-    <div class="input-group" style="margin-bottom: 0;">
+                <!-- CHAT (Soporta Canales y DM) -->
+                <div id="tab-chat" class="contenido-tab active">
+                    <div style="display:flex; gap:6px; margin-bottom:8px;">
+                        <button id="btn-canal-gral" class="btn-txt-sm" style="flex:1; background:var(--primary); color:white;">General</button>
+                        <button id="btn-canal-eq" class="btn-txt-sm" style="flex:1;">Equipo</button>
+                        <button id="btn-canal-dm" class="btn-txt-sm" style="flex:1;">Personal</button>
+                    </div>
+                    <div id="lista-mensajes" style="flex-grow: 1; overflow-y: auto; margin-bottom: 8px;"></div>
+                    
+                    <div class="input-group" id="dm-select-wrapper" style="display: none; margin-bottom:4px;">
+                        <select id="chat-dm-dest" style="width: 100%;">
+                            <option value="">Seleccionar destinatario...</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="margin-bottom: 0;">
                         <textarea id="nuevo-mensaje" class="task-input" placeholder="Mensaje..." style="min-height:34px; height:34px;"></textarea>
                         <button class="btn-accion" id="btn-enviar-msg">Enviar</button>
                     </div>
@@ -338,7 +359,7 @@
         let tareasAlertadas = new Set(); 
         let temporizadorAlarma = null;
         let heartbeatInterval = null;
-       let currentTab = 'chat';
+        let currentTab = 'chat';
         let chatCanalActivo = 'general';
 
         const mainGrid = document.getElementById('main-grid');
@@ -350,7 +371,7 @@
         const tabHistorial = document.getElementById('tab-historial');
         const tabEquipo = document.getElementById('tab-equipo');
 
-        // Helper Universal de Doble Check (Restaura siempre el texto original al confirmar o expirar)
+        // Helper Universal de Doble Check
         function pedirConfirmacion(btn, textoConfirmar, accion) {
             if (!btn.dataset.confirming) {
                 btn.dataset.confirming = 'true';
@@ -419,6 +440,7 @@
             if (data) {
                 cacheUsuarios = data;
                 actualizarSelectFiltroEquipos();
+                actualizarSelectDestinatariosDM();
             }
         }
 
@@ -437,6 +459,15 @@
                 return eqA - eqB || a.nombre.localeCompare(b.nombre);
             });
             return `<option value="">Seleccionar usuario...</option>` + ordenados.map(u => `<option value="${u.nombre}">${u.nombre.toUpperCase()} (${u.rol || 'ATC'} • ${u.equipo || 'General'})</option>`).join('');
+        }
+        
+        function actualizarSelectDestinatariosDM() {
+             const sel = document.getElementById('chat-dm-dest');
+             if(sel) {
+                 const current = sel.value;
+                 sel.innerHTML = generarOpcionesUsuariosHtml(nombreActual);
+                 sel.value = current;
+             }
         }
 
         function iniciarHeartbeat() {
@@ -494,25 +525,29 @@
             panelTareas.querySelector('#badge-equipo').innerText = equipoActual;
             
             if (tareaEnfocadaId) panelTareas.querySelector('#banner-enfoque').style.display = 'flex';
-            // Configurar botones de chat dinámicos
+            
+            // Canales de Chat Configuración Inicial
             const btnChatGral = document.getElementById('btn-canal-gral');
             const btnChatEq = document.getElementById('btn-canal-eq');
+            const btnChatDm = document.getElementById('btn-canal-dm');
+            const dmSelectWrap = document.getElementById('dm-select-wrapper');
             
-            btnChatEq.innerText = equipoActual.toUpperCase(); // Renombra el botón
+            btnChatEq.innerText = equipoActual.toUpperCase();
 
-            // Lógica de cambio de canal visual y funcional
-            btnChatGral.onclick = () => {
-                chatCanalActivo = 'general';
-                btnChatGral.style.background = 'var(--primary)'; btnChatGral.style.color = 'white';
-                btnChatEq.style.background = 'transparent'; btnChatEq.style.color = 'var(--secondary)';
+            function setChatTab(canal, btnActivo) {
+                chatCanalActivo = canal;
+                [btnChatGral, btnChatEq, btnChatDm].forEach(b => { b.style.background = 'transparent'; b.style.color = 'var(--secondary)'; });
+                btnActivo.style.background = 'var(--primary)'; btnActivo.style.color = 'white';
+                dmSelectWrap.style.display = canal === 'personal' ? 'flex' : 'none';
                 renderChat();
-            };
-            btnChatEq.onclick = () => {
-                chatCanalActivo = 'equipo';
-                btnChatEq.style.background = 'var(--primary)'; btnChatEq.style.color = 'white';
-                btnChatGral.style.background = 'transparent'; btnChatGral.style.color = 'var(--secondary)';
-                renderChat();
-            };
+            }
+
+            btnChatGral.onclick = () => setChatTab('general', btnChatGral);
+            btnChatEq.onclick = () => setChatTab('equipo', btnChatEq);
+            btnChatDm.onclick = () => setChatTab('personal', btnChatDm);
+            
+            document.getElementById('chat-dm-dest').onchange = () => renderChat();
+
             if (esSupervisorGlobal) panelUtilidades.querySelector('#btn-tab-equipo').style.display = 'flex';
             if (esAdminGlobal) tabHistorial.querySelector('#btn-limpiar-historial').style.display = 'inline-flex';
             if (!esAdminGlobal) tabEquipo.querySelector('#admin-top-actions').style.display = 'none';
@@ -594,13 +629,14 @@
         };
 
         function iniciarApp() {
+            // Manejo de las pestañas en vista principal
             ['chat', 'notas', 'delegadas', 'historial', 'equipo'].forEach(p => {
                 const b = panelUtilidades.querySelector(`#btn-tab-${p}`);
                 if(b) b.onclick = () => {
                     currentTab = p;
                     panelUtilidades.querySelectorAll('.tab-btn, .contenido-tab').forEach(el => el.classList.remove('active'));
                     b.classList.add('active'); panelUtilidades.querySelector(`#tab-${p}`)?.classList.add('active');
-                    if(p === 'chat') panelUtilidades.querySelector('#dot-chat').style.display = 'none';
+                    if(p === 'chat') { panelUtilidades.querySelector('#dot-chat').style.display = 'none'; renderChat(); }
                     if(p === 'delegadas') panelUtilidades.querySelector('#dot-delegadas').style.display = 'none';
                     if(p === 'equipo' && esSupervisorGlobal) cargarMetrics();
                 };
@@ -680,15 +716,15 @@
                             </div>
                             
                             <div class="action-box box-trans inline">
-                                <select class="action-input select-trans">${generarOpcionesUsuariosHtml(nombreActual)}</select>
+                                <select class="action-input select-trans" style="flex:1;">${generarOpcionesUsuariosHtml(nombreActual)}</select>
                                 <button class="btn-txt-sm btn-ok-trans">Delegar</button>
                             </div>
                             
                             <div class="action-box box-edit">
                                 <textarea class="action-input input-edit" style="resize:vertical; min-height:38px;">${item.texto}</textarea>
-                                <div style="display:flex; gap:6px;">
+                                <div style="display:flex; gap:6px; flex-wrap:wrap;">
                                     <input type="datetime-local" class="action-input input-edit-fecha" value="${toInputDateTime(item.fecha_programada)}">
-                                    <button class="btn-txt-sm btn-ok-edit" style="background:var(--primary); color:white;">Guardar</button>
+                                    <button class="btn-txt-sm btn-ok-edit" style="background:var(--primary); color:white; flex:1;">Guardar</button>
                                 </div>
                             </div>
 
@@ -696,15 +732,15 @@
                             
                             <div class="action-box box-update">
                                 <textarea class="action-input input-upd-texto" placeholder="Actualizar..." style="resize:vertical; min-height:38px; border-color:var(--accent);"></textarea>
-                                <div style="display:flex; gap:6px;">
+                                <div style="display:flex; gap:6px; flex-wrap:wrap;">
                                     <input type="datetime-local" class="action-input input-upd-fecha">
                                     <button class="btn-accion btn-ok-update" style="flex-grow:1;">Guardar</button>
                                 </div>
                             </div>
 
-                            <div class="action-box box-finish">
+                            <div class="action-box box-finish inline">
                                 <input type="text" class="action-input input-fin-comentario" placeholder="Añadir comentario">
-                                <button class="btn-txt-sm btn-confirm-fin" style="align-self:flex-end; color:var(--prio-3); border-color:var(--prio-3);">Completar</button>
+                                <button class="btn-txt-sm btn-confirm-fin" style="color:var(--prio-3); border-color:var(--prio-3);">Completar</button>
                             </div>
                         </div>
                         
@@ -1003,7 +1039,7 @@
             btnAddNota.onclick = createN;
             inputNuevaNota.onkeydown = (e) => { if(e.key === 'Enter') { e.preventDefault(); createN(); } };
 
-            // HISTORIAL, EXPORTAR EXCEL Y VACIAR
+            // HISTORIAL
             const listaHistorial = tabHistorial.querySelector('#lista-historial');
             const btnLimpiarHistorial = tabHistorial.querySelector('#btn-limpiar-historial');
             const btnExportarCsv = tabHistorial.querySelector('#btn-exportar-csv');
@@ -1012,6 +1048,7 @@
                 let { data: t } = await db.from('tareas').select('texto, fecha_completada, actualizaciones, comentario_cierre').eq('completada', true).ilike('asignado_a', nombreActual).order('fecha_completada', { ascending: false }).limit(60);
                 if (!t) return;
                 listaHistorial.innerHTML = '';
+                if(!t.length) { listaHistorial.innerHTML = `<div style="font-size:12px; color:var(--secondary); padding: 10px;">Sin historial.</div>`; return; }
                 t.forEach(item => { 
                     const hist = Array.isArray(item.actualizaciones) ? item.actualizaciones : [];
                     const histHtml = hist.length > 0 ? `<div class="updates-list" style="display:block; margin-top:4px;">` + hist.map(h => `<div class="update-item"><span>[${h.fecha}]</span> ${linkify(h.texto)}</div>`).join('') + `</div>` : '';
@@ -1043,23 +1080,38 @@
                 });
             }
 
-            // CHAT
+            // CHAT POR CANALES
             const listaMensajes = tabChat.querySelector('#lista-mensajes');
             const inputNuevoMensaje = tabChat.querySelector('#nuevo-mensaje');
             const btnEnviarMsg = tabChat.querySelector('#btn-enviar-msg');
+            const selectDM = document.getElementById('chat-dm-dest');
 
-async function renderChat(rt = false) {
+            async function renderChat(rt = false) {
                 let query = db.from('mensajes').select('*');
                 
                 if (chatCanalActivo === 'general') {
                     query = query.eq('canal', 'general');
-                } else {
+                } else if (chatCanalActivo === 'equipo') {
                     query = query.eq('canal', 'equipo').eq('equipo_destino', equipoActual);
+                } else if (chatCanalActivo === 'personal') {
+                    const targetUser = selectDM.value;
+                    if (!targetUser) {
+                        listaMensajes.innerHTML = `<div style="font-size:12px; color:var(--secondary); padding: 10px;">Selecciona un usuario arriba para ver los mensajes.</div>`;
+                        return;
+                    }
+                    // Buscar mensajes donde soy origen o destino con ese usuario específico
+                    query = query.eq('canal', 'personal')
+                                 .or(`and(usuario.ilike.${nombreActual},usuario_destino.ilike.${targetUser}),and(usuario.ilike.${targetUser},usuario_destino.ilike.${nombreActual})`);
                 }
                 
                 let { data: m } = await query.order('created_at', { ascending: false }).limit(50);
                 if (!m) return;
+                
                 listaMensajes.innerHTML = '';
+                if (!m.length) {
+                    listaMensajes.innerHTML = `<div style="font-size:12px; color:var(--secondary); padding: 10px;">Sin mensajes.</div>`;
+                }
+
                 if (rt && m.length > 0 && m[0].usuario.toLowerCase() !== nombreActual) { 
                     emitirAlerta(); 
                     if (!tabChat.classList.contains('active')) {
@@ -1068,29 +1120,43 @@ async function renderChat(rt = false) {
                     }
                 }
                 m.reverse().forEach(item => { 
-                    listaMensajes.innerHTML += `<div class="mensaje"><div class="msg-usuario">${item.usuario}</div><div class="msg-texto">${linkify(item.texto)}</div></div>`; 
+                    let extraClass = '';
+                    if (chatCanalActivo === 'personal') {
+                        extraClass = item.usuario.toLowerCase() === nombreActual ? 'dm dm-sent' : 'dm';
+                    }
+                    listaMensajes.innerHTML += `<div class="mensaje ${extraClass}"><div class="msg-usuario">${item.usuario}</div><div class="msg-texto">${linkify(item.texto)}</div></div>`; 
                 });
                 listaMensajes.scrollTop = listaMensajes.scrollHeight;
                 aplicarFiltroGlobal();
             }
-const createM = async () => { 
+
+            const createM = async () => { 
                 const tx = inputNuevoMensaje.value.trim(); 
-                if(tx) { 
-                    await db.from('mensajes').insert([{ 
-                        usuario: nombreActual, 
-                        texto: tx,
-                        canal: chatCanalActivo,
-                        equipo_destino: chatCanalActivo === 'equipo' ? equipoActual : null
-                    }]); 
-                    inputNuevoMensaje.value = ''; 
-                    await db.from('usuarios').update({ ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual); 
-                    renderChat(); 
+                if(!tx) return;
+                
+                let dest = null;
+                if (chatCanalActivo === 'equipo') dest = equipoActual;
+                if (chatCanalActivo === 'personal') {
+                    dest = selectDM.value;
+                    if (!dest) return alert("Selecciona a quién enviar el mensaje personal.");
                 }
+
+                await db.from('mensajes').insert([{ 
+                    usuario: nombreActual, 
+                    texto: tx,
+                    canal: chatCanalActivo,
+                    equipo_destino: chatCanalActivo === 'equipo' ? dest : null,
+                    usuario_destino: chatCanalActivo === 'personal' ? dest : null
+                }]); 
+                
+                inputNuevoMensaje.value = ''; 
+                await db.from('usuarios').update({ ultima_actividad: new Date().toISOString() }).eq('nombre', nombreActual); 
+                renderChat(); 
             };
             btnEnviarMsg.onclick = createM;
             inputNuevoMensaje.onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); createM(); } };
 
-            // EQUIPO Y GESTIÓN DE ROLES / CÉLULAS
+            // EQUIPO
             const btnLimpiarChat = tabEquipo.querySelector('#btn-limpiar-chat');
             const btnToggleCrearUsr = tabEquipo.querySelector('#btn-toggle-crear-usr');
             const boxNuevoUsuario = tabEquipo.querySelector('#box-nuevo-usuario');
@@ -1135,6 +1201,7 @@ const createM = async () => {
 
                 cacheUsuarios = users;
                 actualizarSelectFiltroEquipos();
+                actualizarSelectDestinatariosDM();
 
                 const filtroEq = selectFiltroEquipo.value;
                 const usuariosFiltrados = filtroEq === 'TODOS' ? users : users.filter(u => (u.equipo || 'General') === filtroEq);
@@ -1182,7 +1249,7 @@ const createM = async () => {
                                 <span class="role-tag">${uRol}</span>
                                 <span class="role-tag" style="background:#e8f4f8; color:#2980b9;">${uEq}</span>
                             </span>
-                            <div style="display:flex; gap:4px;">
+                            <div style="display:flex; gap:4px; flex-wrap:wrap;">
                                 <button class="btn-txt-sm insp-btn" style="color:var(--accent); border-color:var(--accent);">Tareas (${pendientes.length})</button>
                                 ${esAdminGlobal ? `<button class="btn-txt-sm cfg-btn">Rol/Eq</button>` : ''}
                                 ${esAdminGlobal ? `<button class="btn-txt-sm reset-pin">PIN</button>` : ''}
@@ -1195,7 +1262,7 @@ const createM = async () => {
                             <div>📋 Carga: <b>${pendientes.length}</b> (🔴 ${p1} urgentes | ⏭️ ${aFuturo} futuro) ${vencidas > 0 ? `<span style="color:var(--danger); font-weight:bold;">• ⚠️ ${vencidas} vencidas</span>` : ''}</div>
                         </div>
                         
-                        <div class="action-box box-cfg-user inline" style="display:none;">
+                        <div class="action-box box-cfg-user inline" style="display:none; margin-top:6px;">
                             <select class="action-input edit-u-rol">
                                 <option value="ATC" ${uRol==='ATC'?'selected':''}>ATC</option>
                                 <option value="Ejecutivo" ${uRol==='Ejecutivo'?'selected':''}>Ejecutivo</option>
@@ -1254,8 +1321,8 @@ const createM = async () => {
                                     tRow.style.cssText = "display:flex; flex-direction:column; gap:4px; background:#f8fafc; padding:6px; border:1px solid var(--border); margin-bottom:4px; border-radius:4px;";
                                     tRow.innerHTML = `
                                         <div style="font-size:12px; color:var(--primary); word-break:break-word;">${linkify(pt.texto)}</div>
-                                        <div style="display:flex; gap:4px; align-items:center;">
-                                            <select class="sup-select-trans" style="flex:1; height:26px; font-size:11px; padding:2px;">${generarOpcionesUsuariosHtml(u.nombre)}</select>
+                                        <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
+                                            <select class="sup-select-trans" style="flex:1; min-width:120px; height:26px; font-size:11px; padding:2px;">${generarOpcionesUsuariosHtml(u.nombre)}</select>
                                             <button class="btn-txt-sm sup-reassign-btn" style="font-size:10px;">Mover</button>
                                             <button class="btn-txt-sm sup-del-task-btn" style="font-size:10px; color:var(--danger); border-color:var(--danger);">✕</button>
                                         </div>
@@ -1291,7 +1358,7 @@ const createM = async () => {
                 aplicarFiltroGlobal();
             }
 
-            // Suscripciones Realtime
+            // Suscripciones Realtime Globales (Canales y DM)
             db.channel('public:tareas').on('postgres_changes', { event: '*', schema: 'public', table: 'tareas' }, () => { 
                 renderTareas(true); renderHistorial(); renderDelegadas(true); if(esSupervisorGlobal) cargarMetrics(); 
             }).subscribe();
@@ -1299,9 +1366,28 @@ const createM = async () => {
                 refrescarCacheUsuarios(); if(esSupervisorGlobal) cargarMetrics(); 
             }).subscribe();
             db.channel('public:notas').on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => { renderNotas(); }).subscribe();
-            db.channel('public:mensajes').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, () => { renderChat(true); }).subscribe();
+            db.channel('public:mensajes').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, (payload) => { 
+                const m = payload.new;
+                // Si me mandaron un DM o es mi canal de equipo, aviso visual y sonoro si no estoy viendo ese chat
+                if (m.usuario.toLowerCase() !== nombreActual) {
+                    if (m.canal === 'personal' && m.usuario_destino === nombreActual) {
+                        emitirAlerta();
+                        if (chatCanalActivo !== 'personal' || document.getElementById('chat-dm-dest').value !== m.usuario) {
+                            panelUtilidades.querySelector('#dot-chat').style.display = 'block';
+                            panelTareas.querySelector('#dot-chat-pip').style.display = 'block';
+                            if (Notification.permission === "granted") new Notification(`💬 Mensaje privado de ${m.usuario}`, { body: m.texto });
+                        }
+                    } else if (m.canal === 'equipo' && m.equipo_destino === equipoActual) {
+                        if (chatCanalActivo !== 'equipo') {
+                            panelUtilidades.querySelector('#dot-chat').style.display = 'block';
+                            panelTareas.querySelector('#dot-chat-pip').style.display = 'block';
+                        }
+                    }
+                }
+                renderChat(true); 
+            }).subscribe();
 
-            renderTareas(); renderNotas(); renderChat(); renderHistorial(); renderDelegadas();
+            renderTareas(); renderNotas(); renderHistorial(); renderDelegadas();
             if(esSupervisorGlobal) cargarMetrics();
         }
     </script>
